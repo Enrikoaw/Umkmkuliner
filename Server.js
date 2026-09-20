@@ -13,12 +13,12 @@ app.use(cors());
 
 // Konfigurasi koneksi database MySQL "umkm_kuliner"
 const dbConfig = {
-    host: 'gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com',
-    user: 'tx9oWrEPGNDydHC.root',
-    password: '7SDMLRCRXEDVgINp',
-    port: 4000,
-    database: 'umkm_kuliner',
-    ssl: { rejectUnauthorized: true }, // Diperlukan oleh TiDB Cloud
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 4000,
+    ssl: { rejectUnauthorized: true }, // Baris ini wajib ada untuk TiDB Cloud
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
