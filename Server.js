@@ -8,6 +8,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const cors = require('cors');
+app.use(cors());
+
 // Konfigurasi koneksi database MySQL "umkm_kuliner"
 const dbConfig = {
     host: 'gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com',
