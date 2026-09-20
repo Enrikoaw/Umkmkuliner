@@ -752,7 +752,15 @@
         }
         function closeReceiptModal() { document.getElementById('thermalReceiptModal').classList.add('hidden'); }
 
-        window.onload = async function() { renderCart(); await refreshDataDariDatabase(); };
+        window.onload = async function() { 
+    renderCart(); 
+    await refreshDataDariDatabase(); 
+    
+    // Tambahkan kode ini: Tarik data otomatis dari server setiap 10 detik
+    setInterval(async () => {
+        await loadTransactionsFromDatabase();
+    }, 10000);
+};
     </script>
 </body>
 </html>
