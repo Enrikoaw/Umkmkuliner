@@ -146,7 +146,7 @@ app.post('/api/pesanan', async (req, res) => {
 // 3. GET /api/pesanan: Mengambil daftar seluruh pesanan
 app.get('/api/pesanan', async (req, res) => {
     try {
-        const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga FROM pesanan ORDER BY Tanggal DESC');
+        const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga FROM pesanan ORDER BY Idpesanan DESC');
         for (let p of pList) {
             const [dList] = await pool.query(`
                 SELECT dp.*, m.Nama_Menu as nama_menu, dp.Jumlah as jumlah

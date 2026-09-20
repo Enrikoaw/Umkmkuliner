@@ -353,11 +353,15 @@
         }
 
         async function apiRequest(endpoint, options = {}) {
-            const response = await fetch(`${BACKEND_BASE_URL}${endpoint}`, { headers: { 'Content-Type': 'application/json' }, ...options });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message || `HTTP Error: ${response.status}`);
-            return result;
-        }
+    const response = await fetch(`${BACKEND_BASE_URL}${endpoint}`, { 
+        headers: { 'Content-Type': 'application/json' }, 
+        cache: 'no-store', // Wajib ditambahkan agar selalu menarik data terbaru dari server
+        ...options 
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || `HTTP Error: ${response.status}`);
+    return result;
+}
 
         async function refreshDataDariDatabase() {
             updateDbStatus(null, "Menyinkronkan...");
