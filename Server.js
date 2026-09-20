@@ -10,10 +10,12 @@ app.use(express.json());
 
 // Konfigurasi koneksi database MySQL "umkm_kuliner"
 const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'Enrikoaw',
+    host: 'gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com',
+    user: 'tx9oWrEPGNDydHC.root',
+    password: '7SDMLRCRXEDVgINp',
+    port: 4000,
     database: 'umkm_kuliner',
+    ssl: { rejectUnauthorized: true }, // Diperlukan oleh TiDB Cloud
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
