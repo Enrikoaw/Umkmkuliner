@@ -15,7 +15,7 @@ const dbConfig = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT || 4000,
-    ssl: { rejectUnauthorized: true }, // Baris ini wajib ada untuk TiDB Cloud
+    ssl: { rejectUnauthorized: true }, // Di-comment untuk koneksi lokal/XAMPP
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -27,16 +27,16 @@ async function initializeDatabase() {
     try {
         pool = mysql.createPool(dbConfig);
         const connection = await pool.getConnection();
-        console.log("Terhubung ke database MySQL 'umkm_kuliner'. (Mode Rumah Makan - Tanpa Stok)");
+        console.log("Terhubung ke database MySQL 'umkm_kuliner'. (Mode Rumah Makan - Ada HPP)");
         connection.release();
     } catch (error) {
         console.error("Gagal terhubung ke database:", error.message);
     }
 }
 
-// ==========================================
+
 // FITUR MANAJEMEN MENU (CRUD)
-// ==========================================
+
 // 1. GET /api/menu: Mengambil daftar menu
 app.get('/api/menu', async (req, res) => {
     try {
@@ -47,24 +47,24 @@ app.get('/api/menu', async (req, res) => {
     }
 });
 
-// 1a. POST /api/menu: Tambah Menu Baru
+// 1a. POST /api/menu: Tambah Menu Baru (Ditambah HPP)
 app.post('/api/menu', async (req, res) => {
-    const { Nama_Menu, Harga, Kategori } = req.body;
+    const { Nama_Menu, Harga, Kategori, HPP } = req.body;
     if (!Nama_Menu || !Harga) return res.status(400).json({ success: false, message: 'Nama dan Harga wajib diisi' });
     try {
-        await pool.query('INSERT INTO menu (Nama_Menu, Harga, Kategori) VALUES (?, ?, ?)', [Nama_Menu, Harga, Kategori || 'Umum']);
+        await pool.query('INSERT INTO menu (Nama_Menu, Harga, Kategori, HPP) VALUES (?, ?, ?, ?)', [Nama_Menu, Harga, Kategori || 'Umum', HPP || 0]);
         res.json({ success: true, message: 'Menu berhasil ditambahkan' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// 1b. PUT /api/menu/:id: Edit Menu
+// 1b. PUT /api/menu/:id: Edit Menu (Ditambah HPP)
 app.put('/api/menu/:id', async (req, res) => {
     const { id } = req.params;
-    const { Nama_Menu, Harga, Kategori } = req.body;
+    const { Nama_Menu, Harga, Kategori, HPP } = req.body;
     try {
-        await pool.query('UPDATE menu SET Nama_Menu = ?, Harga = ?, Kategori = ? WHERE Idmenu = ?', [Nama_Menu, Harga, Kategori, id]);
+        await pool.query('UPDATE menu SET Nama_Menu = ?, Harga = ?, Kategori = ?, HPP = ? WHERE Idmenu = ?', [Nama_Menu, Harga, Kategori, HPP || 0, id]);
         res.json({ success: true, message: 'Menu berhasil diperbarui' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -86,10 +86,10 @@ app.delete('/api/menu/:id', async (req, res) => {
     }
 });
 
-// ==========================================
+
 // FITUR TRANSAKSI & LAPORAN 
-// ==========================================
-// 2. POST /api/pesanan: Menerima input pesanan tanpa validasi stok
+
+// 2. POST /api/pesanan: Menerima input pesanan
 app.post('/api/pesanan', async (req, res) => {
     const { items } = req.body; 
 
@@ -200,19 +200,31 @@ app.put('/api/pesanan/:id/status', async (req, res) => {
     }
 });
 
-// 5. GET /api/laporan: Laporan Keuangan
+// 5. GET /api/laporan: Laporan Keuangan Dinamis dengan kalkulasi HPP
 app.get('/api/laporan', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT *, Tanggal_Pencatatan as tanggal, Pendapatan as total_pendapatan FROM laporan_keuangan ORDER BY Tanggal_Pencatatan DESC');
+        
+        const [rows] = await pool.query(`
+            SELECT 
+                DATE(p.Tanggal) as tanggal,
+                SUM(dp.Subtotal) as total_pendapatan,
+                SUM(dp.Subtotal - (IFNULL(m.HPP, 0) * dp.Jumlah)) as laba_bersih
+            FROM pesanan p
+            JOIN detail_pesanan dp ON p.Idpesanan = dp.Idpesanan
+            JOIN menu m ON dp.Idmenu = m.Idmenu
+            WHERE p.Status = 'Selesai'
+            GROUP BY DATE(p.Tanggal)
+            ORDER BY tanggal DESC
+        `);
         res.json({ success: true, data: rows });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ==========================================
+
 // FITUR STATISTIKA ANALITIK
-// ==========================================
+
 // 6. GET /api/statistik/jam: Mengambil data jam sibuk (Peak Hours)
 app.get('/api/statistik/jam', async (req, res) => {
     try {
