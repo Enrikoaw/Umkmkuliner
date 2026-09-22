@@ -8,14 +8,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Konfigurasi koneksi database MySQL "umkm_kuliner"
 const dbConfig = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT || 4000,
-    ssl: { rejectUnauthorized: true }, // Di-comment untuk koneksi lokal/XAMPP
+    ssl: { rejectUnauthorized: true }, 
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -27,17 +26,14 @@ async function initializeDatabase() {
     try {
         pool = mysql.createPool(dbConfig);
         const connection = await pool.getConnection();
-        console.log("Terhubung ke database MySQL 'umkm_kuliner'. (Mode Rumah Makan - Ada HPP)");
+        console.log("Terhubung ke database MySQL 'umkm_kuliner'.");
         connection.release();
     } catch (error) {
         console.error("Gagal terhubung ke database:", error.message);
     }
 }
 
-
-// FITUR MANAJEMEN MENU (CRUD)
-
-// 1. GET /api/menu: Mengambil daftar menu
+// 1. GET /api/menu
 app.get('/api/menu', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM menu');
@@ -47,7 +43,7 @@ app.get('/api/menu', async (req, res) => {
     }
 });
 
-// 1a. POST /api/menu: Tambah Menu Baru (Ditambah HPP)
+// 1a. POST /api/menu
 app.post('/api/menu', async (req, res) => {
     const { Nama_Menu, Harga, Kategori, HPP } = req.body;
     if (!Nama_Menu || !Harga) return res.status(400).json({ success: false, message: 'Nama dan Harga wajib diisi' });
@@ -59,7 +55,7 @@ app.post('/api/menu', async (req, res) => {
     }
 });
 
-// 1b. PUT /api/menu/:id: Edit Menu (Ditambah HPP)
+// 1b. PUT /api/menu/:id
 app.put('/api/menu/:id', async (req, res) => {
     const { id } = req.params;
     const { Nama_Menu, Harga, Kategori, HPP } = req.body;
@@ -71,7 +67,7 @@ app.put('/api/menu/:id', async (req, res) => {
     }
 });
 
-// 1c. DELETE /api/menu/:id: Hapus Menu
+// 1c. DELETE /api/menu/:id
 app.delete('/api/menu/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -86,10 +82,7 @@ app.delete('/api/menu/:id', async (req, res) => {
     }
 });
 
-
-// FITUR TRANSAKSI & LAPORAN 
-
-// 2. POST /api/pesanan: Menerima input pesanan
+// 2. POST /api/pesanan (Diperbarui dengan No Antrean & Catatan)
 app.post('/api/pesanan', async (req, res) => {
     const { items } = req.body; 
 
@@ -115,27 +108,44 @@ app.post('/api/pesanan', async (req, res) => {
             verifiedItems.push({
                 menu_id: menu.Idmenu,
                 jumlah: Number(item.jumlah),
-                subtotal: subtotal
+                subtotal: subtotal,
+                catatan: item.catatan || null // Tangkap catatan dari frontend
             });
         }
 
+        // GENERATE NO ANTREAN HARIAN
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const [antreanRows] = await connection.query(`
+            SELECT MAX(No_Antrean) as lastAntrean 
+            FROM pesanan 
+            WHERE DATE(Tanggal) = ?
+        `, [todayStr]);
+        
+        const no_antrean = (antreanRows[0].lastAntrean || 0) + 1;
+
+        // SIMPAN PESANAN BESERTA NO ANTREAN
         const [pesananResult] = await connection.query(
-            'INSERT INTO pesanan (Status, Total_Harga, Tanggal) VALUES ("Pending", ?, NOW())',
-            [total_harga]
+            'INSERT INTO pesanan (Status, Total_Harga, Tanggal, No_Antrean) VALUES ("Pending", ?, NOW(), ?)',
+            [total_harga, no_antrean]
         );
         const idpesanan = pesananResult.insertId;
 
+        // SIMPAN DETAIL PESANAN BESERTA CATATAN
         for (let vItem of verifiedItems) {
             await connection.query(
-                'INSERT INTO detail_pesanan (Idpesanan, Idmenu, Jumlah, Subtotal) VALUES (?, ?, ?, ?)',
-                [idpesanan, vItem.menu_id, vItem.jumlah, vItem.subtotal]
+                'INSERT INTO detail_pesanan (Idpesanan, Idmenu, Jumlah, Subtotal, Catatan) VALUES (?, ?, ?, ?, ?)',
+                [idpesanan, vItem.menu_id, vItem.jumlah, vItem.subtotal, vItem.catatan]
             );
         }
 
         await connection.commit();
         connection.release();
 
-        res.status(201).json({ success: true, message: 'Pesanan berhasil dibuat.', data: { idpesanan, total_harga, status: 'Pending' } });
+        res.status(201).json({ 
+            success: true, 
+            message: 'Pesanan berhasil dibuat.', 
+            data: { idpesanan, total_harga, status: 'Pending', no_antrean } 
+        });
     } catch (error) {
         await connection.rollback();
         connection.release();
@@ -143,13 +153,13 @@ app.post('/api/pesanan', async (req, res) => {
     }
 });
 
-// 3. GET /api/pesanan: Mengambil daftar seluruh pesanan
+// 3. GET /api/pesanan (Diperbarui mengambil Catatan & No Antrean)
 app.get('/api/pesanan', async (req, res) => {
     try {
-        const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga FROM pesanan ORDER BY Idpesanan DESC');
+        const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga, No_Antrean as no_antrean FROM pesanan ORDER BY Idpesanan DESC');
         for (let p of pList) {
             const [dList] = await pool.query(`
-                SELECT dp.*, m.Nama_Menu as nama_menu, dp.Jumlah as jumlah
+                SELECT dp.*, m.Nama_Menu as nama_menu, dp.Jumlah as jumlah, dp.Catatan as catatan
                 FROM detail_pesanan dp 
                 JOIN menu m ON dp.Idmenu = m.Idmenu 
                 WHERE dp.Idpesanan = ?
@@ -162,7 +172,7 @@ app.get('/api/pesanan', async (req, res) => {
     }
 });
 
-// 4. PUT /api/pesanan/:id/status: Mengubah status pesanan
+// 4. PUT /api/pesanan/:id/status
 app.put('/api/pesanan/:id/status', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -200,10 +210,9 @@ app.put('/api/pesanan/:id/status', async (req, res) => {
     }
 });
 
-// 5. GET /api/laporan: Laporan Keuangan Dinamis dengan kalkulasi HPP
+// 5. GET /api/laporan
 app.get('/api/laporan', async (req, res) => {
     try {
-        
         const [rows] = await pool.query(`
             SELECT 
                 DATE(p.Tanggal) as tanggal,
@@ -222,10 +231,7 @@ app.get('/api/laporan', async (req, res) => {
     }
 });
 
-
-// FITUR STATISTIKA ANALITIK
-
-// 6. GET /api/statistik/jam: Mengambil data jam sibuk (Peak Hours)
+// 6. GET /api/statistik/jam
 app.get('/api/statistik/jam', async (req, res) => {
     try {
         const [rows] = await pool.query(`
@@ -241,7 +247,7 @@ app.get('/api/statistik/jam', async (req, res) => {
     }
 });
 
-// 7. GET /api/statistik/terlaris: Mengambil data menu paling laris (7 hari terakhir)
+// 7. GET /api/statistik/terlaris
 app.get('/api/statistik/terlaris', async (req, res) => {
     try {
         const [rows] = await pool.query(`
