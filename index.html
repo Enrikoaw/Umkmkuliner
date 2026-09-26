@@ -1339,21 +1339,23 @@
             if (method === 'Tunai' && tendered < grandTotal) { showAlert('Uang tunai yang diterima kurang dari total tagihan!', 'error'); return; }
             
             const tableNo = document.getElementById('tableSelect').value;
-            // Menambahkan 'catatan: i.notes' ke payload API
             const payload = { 
                 meja: tableNo, 
                 items: appState.cart.map(i => ({ menu_id: i.menuId, jumlah: i.qty, catatan: i.notes })) 
             };
             
             closePaymentModal();
-            const printingPopup = document.getElementById('printingPopup'); printingPopup.classList.remove('hidden');
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            const printingPopup = document.getElementById('printingPopup'); 
+            printingPopup.classList.remove('hidden');
+            
+            // [DIHAPUS]: Perintah delay 3 detik (await new Promise...) sudah dihapus agar instan
 
             try {
-                printingPopup.classList.add('hidden');
-                
+                // Langsung tembak ke database tanpa menunggu
                 const result = await apiRequest('/api/pesanan', { method: 'POST', body: JSON.stringify(payload) });
                 if (!result.success) throw new Error("Gagal menyimpan ke database");
+                
+                printingPopup.classList.add('hidden'); // Matikan popup loading instan
                 
                 const changeAmmount = method === 'Tunai' ? (tendered - grandTotal) : 0;
                 
@@ -1368,11 +1370,18 @@
                     grandTotal: grandTotal, 
                     tendered: tendered, 
                     change: changeAmmount > 0 ? changeAmmount : 0,
-                    tanggal: new Date() // inject current time explicitly
+                    tanggal: new Date()
                 });
                 
-                appState.cart = []; renderCart(); await loadTransactionsFromDatabase(); 
-            } catch (error) { printingPopup.classList.add('hidden'); console.error("Payment Error: ", error); showAlert(`Gagal memproses pembayaran: ${error.message}`, 'error'); }
+                appState.cart = []; renderCart(); 
+                
+                // Refresh data di background tanpa 'await' agar UI tidak terblokir
+                loadTransactionsFromDatabase(); 
+            } catch (error) { 
+                printingPopup.classList.add('hidden'); 
+                console.error("Payment Error: ", error); 
+                showAlert(`Gagal memproses pembayaran: ${error.message}`, 'error'); 
+            }
         }
 
         // --- FILTER RIWAYAT KASIR HARI INI  ---
@@ -1444,12 +1453,30 @@
         }
 
         async function updateStatusPesanan(pesananId, newStatus) {
+            // 1. OPTIMISTIC UPDATE: Ubah tampilan di layar SEKETIKA (0 delay)
+            const targetTrx = appState.transactions.find(t => t.id === pesananId || t.Idpesanan === pesananId);
+            if (targetTrx) {
+                targetTrx.status = newStatus;
+                renderKitchenQueue(); // Update layar koki seketika
+                renderHistoryKasir(); // Update layar kasir seketika
+            }
+
+            // 2. Kirim status ke server diam-diam di background
             try {
                 const result = await apiRequest(`/api/pesanan/${pesananId}/status`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
                 if (result.success) {
-                    showAlert(`Pesanan #${pesananId} diperbarui menjadi ${newStatus}.`); await loadTransactionsFromDatabase(); if (newStatus === 'Selesai') { await loadLaporanFromDatabase(); }
-                } else { throw new Error(result.message); }
-            } catch (error) { showAlert(`Gagal mengubah status: ${error.message}`, 'error'); }
+                    showAlert(`Pesanan #${pesananId} menjadi ${newStatus}.`); 
+                    // Sinkronkan ulang data di background untuk memastikan keamanan data
+                    loadTransactionsFromDatabase(); 
+                    if (newStatus === 'Selesai') { loadLaporanFromDatabase(); }
+                } else { 
+                    throw new Error(result.message); 
+                }
+            } catch (error) { 
+                showAlert(`Gagal mengubah status: ${error.message}`, 'error'); 
+                // Jika gagal koneksi, kembalikan tampilan seperti semula (revert)
+                loadTransactionsFromDatabase();
+            }
         }
 
         function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0); }
