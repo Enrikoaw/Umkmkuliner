@@ -9,7 +9,7 @@ const app = express();
 
 // Konfigurasi CORS Spesifik 
 app.use(cors({
-    origin: 'https://enrikoaw.github.io/Umkmkuliner', 
+    origin: 'https://enrikoaw.github.io', 
     optionsSuccessStatus: 200
 }));
 
