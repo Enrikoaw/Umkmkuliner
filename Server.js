@@ -2,18 +2,63 @@ console.log("⏳ Mulai menjalankan Server.js...");
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// Konfigurasi CORS Spesifik (Sesuaikan URL Frontend Anda)
+app.use(cors({
+    origin: 'https://enrikoaw.github.io/Umkmkuliner', // Ganti dengan URL GitHub Pages frontend Anda
+    optionsSuccessStatus: 200
+}));
+
 app.use(express.json());
 
+const JWT_SECRET = process.env.JWT_SECRET || 'lajurasa_secret_key_super_aman';
+
+// ==========================================
+// FITUR AUTENTIKASI (JWT & PIN)
+// ==========================================
+app.post('/api/login', (req, res) => {
+    const { pin } = req.body;
+    if (pin === '0000') {
+        const token = jwt.sign({ role: 'kasir' }, JWT_SECRET, { expiresIn: '12h' });
+        res.json({ success: true, token });
+    } else {
+        res.status(401).json({ success: false, message: 'PIN salah' });
+    }
+});
+
+app.post('/api/verify-manager', (req, res) => {
+    const { pin } = req.body;
+    if (pin === '1111') {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, message: 'PIN Manager salah' });
+    }
+});
+
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) return res.status(401).json({ success: false, message: 'Akses ditolak. Token tidak ditemukan.' });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ success: false, message: 'Sesi kedaluwarsa atau token tidak valid.' });
+        req.user = user;
+        next();
+    });
+};
+
+// Konfigurasi koneksi database MySQL
 const dbConfig = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 4000,
+    port: process.env.DB_PORT || 3306,//4000,
     ssl: { rejectUnauthorized: true }, 
     waitForConnections: true,
     connectionLimit: 10,
@@ -33,8 +78,12 @@ async function initializeDatabase() {
     }
 }
 
+// ==========================================
+// ENDPOINT TERPROTEKSI (Menggunakan authenticateToken)
+// ==========================================
+
 // 1. GET /api/menu
-app.get('/api/menu', async (req, res) => {
+app.get('/api/menu', authenticateToken, async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM menu');
         res.json({ success: true, data: rows });
@@ -44,7 +93,7 @@ app.get('/api/menu', async (req, res) => {
 });
 
 // 1a. POST /api/menu
-app.post('/api/menu', async (req, res) => {
+app.post('/api/menu', authenticateToken, async (req, res) => {
     const { Nama_Menu, Harga, Kategori, HPP } = req.body;
     if (!Nama_Menu || !Harga) return res.status(400).json({ success: false, message: 'Nama dan Harga wajib diisi' });
     try {
@@ -56,7 +105,7 @@ app.post('/api/menu', async (req, res) => {
 });
 
 // 1b. PUT /api/menu/:id
-app.put('/api/menu/:id', async (req, res) => {
+app.put('/api/menu/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { Nama_Menu, Harga, Kategori, HPP } = req.body;
     try {
@@ -68,7 +117,7 @@ app.put('/api/menu/:id', async (req, res) => {
 });
 
 // 1c. DELETE /api/menu/:id
-app.delete('/api/menu/:id', async (req, res) => {
+app.delete('/api/menu/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     try {
         await pool.query('DELETE FROM menu WHERE Idmenu = ?', [id]);
@@ -82,8 +131,8 @@ app.delete('/api/menu/:id', async (req, res) => {
     }
 });
 
-// 2. POST /api/pesanan (Diperbarui dengan No Antrean & Catatan)
-app.post('/api/pesanan', async (req, res) => {
+// 2. POST /api/pesanan 
+app.post('/api/pesanan', authenticateToken, async (req, res) => {
     const { items } = req.body; 
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -109,11 +158,10 @@ app.post('/api/pesanan', async (req, res) => {
                 menu_id: menu.Idmenu,
                 jumlah: Number(item.jumlah),
                 subtotal: subtotal,
-                catatan: item.catatan || null // Tangkap catatan dari frontend
+                catatan: item.catatan || null 
             });
         }
 
-        // GENERATE NO ANTREAN HARIAN
         const todayStr = new Date().toISOString().slice(0, 10);
         const [antreanRows] = await connection.query(`
             SELECT MAX(No_Antrean) as lastAntrean 
@@ -123,14 +171,12 @@ app.post('/api/pesanan', async (req, res) => {
         
         const no_antrean = (antreanRows[0].lastAntrean || 0) + 1;
 
-        // SIMPAN PESANAN BESERTA NO ANTREAN
         const [pesananResult] = await connection.query(
             'INSERT INTO pesanan (Status, Total_Harga, Tanggal, No_Antrean) VALUES ("Pending", ?, NOW(), ?)',
             [total_harga, no_antrean]
         );
         const idpesanan = pesananResult.insertId;
 
-        // SIMPAN DETAIL PESANAN BESERTA CATATAN
         for (let vItem of verifiedItems) {
             await connection.query(
                 'INSERT INTO detail_pesanan (Idpesanan, Idmenu, Jumlah, Subtotal, Catatan) VALUES (?, ?, ?, ?, ?)',
@@ -153,8 +199,8 @@ app.post('/api/pesanan', async (req, res) => {
     }
 });
 
-// 3. GET /api/pesanan (Diperbarui mengambil Catatan & No Antrean)
-app.get('/api/pesanan', async (req, res) => {
+// 3. GET /api/pesanan 
+app.get('/api/pesanan', authenticateToken, async (req, res) => {
     try {
         const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga, No_Antrean as no_antrean FROM pesanan ORDER BY Idpesanan DESC');
         for (let p of pList) {
@@ -173,7 +219,7 @@ app.get('/api/pesanan', async (req, res) => {
 });
 
 // 4. PUT /api/pesanan/:id/status
-app.put('/api/pesanan/:id/status', async (req, res) => {
+app.put('/api/pesanan/:id/status', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const validStatuses = ['Pending', 'Diproses', 'Selesai'];
@@ -211,7 +257,7 @@ app.put('/api/pesanan/:id/status', async (req, res) => {
 });
 
 // 5. GET /api/laporan
-app.get('/api/laporan', async (req, res) => {
+app.get('/api/laporan', authenticateToken, async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT 
@@ -232,7 +278,7 @@ app.get('/api/laporan', async (req, res) => {
 });
 
 // 6. GET /api/statistik/jam
-app.get('/api/statistik/jam', async (req, res) => {
+app.get('/api/statistik/jam', authenticateToken, async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT HOUR(Tanggal) as jam, COUNT(Idpesanan) as total_order 
@@ -248,7 +294,7 @@ app.get('/api/statistik/jam', async (req, res) => {
 });
 
 // 7. GET /api/statistik/terlaris
-app.get('/api/statistik/terlaris', async (req, res) => {
+app.get('/api/statistik/terlaris', authenticateToken, async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT m.Nama_Menu as nama_menu, SUM(dp.Jumlah) as total_terjual

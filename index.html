@@ -13,16 +13,8 @@
                 extend: {
                     colors: {
                         emerald: {
-                            50: '#f0faff',
-                            100: '#e0f4fe',
-                            200: '#bae6fd',
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#53CBF3', // Warna kustom 
-                            600: '#0ea5e9', // Gelap sedikit untuk efek hover
-                            700: '#0284c7', // Untuk teks/garis
-                            800: '#0369a1', // Untuk header
-                            900: '#075985', // Untuk latar belakang gelap
+                            50: '#f0faff', 100: '#e0f4fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8',
+                            500: '#53CBF3', 600: '#0ea5e9', 700: '#0284c7', 800: '#0369a1', 900: '#075985',
                         }
                     }
                 }
@@ -171,7 +163,6 @@
 
                 <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1 mt-2">Informasi Tambahan</p>
                 
-                <!-- TOMBOL ABOUT -->
                 <button onclick="openFeatureInfo(); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-xl font-bold text-sm border border-slate-200 hover:border-blue-300 shadow-sm transition flex items-center gap-3">
                     <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -582,8 +573,6 @@
         };
 
         const TAX_RATE = 0.10; // Pajak PPN 10%
-        const APP_PIN = "0000"; // PIN Login Default
-        const MANAGER_PIN = "1111"; // PIN Akses Laporan & Menu
         let pendingTargetTab = '';
 
         let revenueChartInstance = null;
@@ -593,34 +582,49 @@
         
         let currentFilteredLaporan = [];
 
-        // --- FUNGSI LOGIN ---
-        function checkLogin() {
+        // --- FUNGSI LOGIN (Menggunakan API & JWT) ---
+        async function checkLogin() {
             const inputPin = document.getElementById('loginPin').value;
             const errorMsg = document.getElementById('loginError');
             
-            if (inputPin === APP_PIN) {
-                errorMsg.classList.add('hidden');
-                document.getElementById('loginOverlay').classList.add('opacity-0');
+            try {
+                const response = await fetch(`${BACKEND_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: inputPin })
+                });
                 
-                setTimeout(() => {
-                    document.getElementById('loginOverlay').classList.add('hidden');
-                    document.getElementById('mainAppContainer').classList.remove('hidden');
-                    document.getElementById('mainAppContainer').classList.add('flex');
+                const result = await response.json();
+
+                if (result.success) {
+                    // BARIS INI SANGAT PENTING: Menyimpan token ke memori browser
+                    localStorage.setItem('lajurasa_token', result.token); 
                     
-                    openFeatureInfo(); 
+                    errorMsg.classList.add('hidden');
+                    document.getElementById('loginOverlay').classList.add('opacity-0');
                     
-                    renderCart(); 
-                    refreshDataDariDatabase(); 
-                }, 500); 
-            } else {
+                    setTimeout(() => {
+                        document.getElementById('loginOverlay').classList.add('hidden');
+                        document.getElementById('mainAppContainer').classList.remove('hidden');
+                        document.getElementById('mainAppContainer').classList.add('flex');
+                        
+                        openFeatureInfo(); 
+                        renderCart(); 
+                        refreshDataDariDatabase(); 
+                    }, 500); 
+                } else {
+                    throw new Error("PIN salah");
+                }
+            } catch (error) {
                 errorMsg.classList.remove('hidden');
                 document.getElementById('loginPin').value = '';
             }
         }
 
-        // --- FUNGSI LOGOUT ---
+        // --- FUNGSI LOGOUT (Hapus JWT) ---
         function prosesLogout() {
             closeSidebar();
+            localStorage.removeItem('lajurasa_token'); // Hapus token
             
             document.getElementById('mainAppContainer').classList.add('hidden');
             document.getElementById('mainAppContainer').classList.remove('flex');
@@ -636,6 +640,66 @@
             document.getElementById('loginError').classList.add('hidden');
             
             switchTab('kasir');
+        }
+
+        // --- FUNGSI API REQUEST (Otomatis sisipkan Authorization Header) ---
+        async function apiRequest(endpoint, options = {}) {
+            const headers = { 'Content-Type': 'application/json' };
+            
+            // MENGAMBIL TOKEN DAN MENYISIPKANNYA SEBAGAI KUNCI AKSES
+            const token = localStorage.getItem('lajurasa_token');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(`${BACKEND_BASE_URL}${endpoint}`, { 
+                headers: headers, 
+                cache: 'no-store', 
+                ...options 
+            });
+            
+            const result = await response.json();
+            
+            // Tangani jika token ditolak/kedaluwarsa oleh server
+            if (response.status === 401 || response.status === 403) {
+                prosesLogout();
+                throw new Error(result.message || "Akses ditolak. Silakan login ulang.");
+            }
+            
+            if (!response.ok) {
+                console.error("API Error Response:", result);
+                throw new Error(result.message || `HTTP Error: ${response.status}`);
+            }
+            return result;
+        }
+
+        // --- FUNGSI VERIFIKASI MANAGER (Menggunakan fetch langsung) ---
+        async function verifyManagerPin() {
+            const inputPin = document.getElementById('managerPinInput').value;
+            const errorEl = document.getElementById('managerPinError');
+
+            try {
+                // Menggunakan fetch biasa, tidak lewat apiRequest agar terhindar dari bentrok sesi JWT
+                const response = await fetch(`${BACKEND_BASE_URL}/api/verify-manager`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: inputPin })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('managerPinModal').classList.add('hidden');
+                    const target = pendingTargetTab;
+                    pendingTargetTab = '';
+                    executeTabSwitch(target);
+                } else {
+                    throw new Error("PIN salah");
+                }
+            } catch(error) {
+                errorEl.classList.remove('hidden');
+                document.getElementById('managerPinInput').value = '';
+            }
         }
 
         // --- FUNGSI ABOUT / FITUR ---
@@ -686,21 +750,6 @@
             pendingTargetTab = '';
         }
 
-        function verifyManagerPin() {
-            const inputPin = document.getElementById('managerPinInput').value;
-            const errorEl = document.getElementById('managerPinError');
-
-            if (inputPin === MANAGER_PIN) {
-                document.getElementById('managerPinModal').classList.add('hidden');
-                const target = pendingTargetTab;
-                pendingTargetTab = '';
-                executeTabSwitch(target);
-            } else {
-                errorEl.classList.remove('hidden');
-                document.getElementById('managerPinInput').value = '';
-            }
-        }
-
         function executeTabSwitch(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             
@@ -724,17 +773,6 @@
             } else if (tabName === 'menu') {
                 document.getElementById('viewMenu').classList.add('active'); btnLainnya.className = activeClass; renderMenuTable();
             }
-        }
-
-        async function apiRequest(endpoint, options = {}) {
-            const response = await fetch(`${BACKEND_BASE_URL}${endpoint}`, { 
-                headers: { 'Content-Type': 'application/json' }, 
-                cache: 'no-store', 
-                ...options 
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message || `HTTP Error: ${response.status}`);
-            return result;
         }
 
         async function refreshDataDariDatabase() {
@@ -775,7 +813,7 @@
                     appState.menus = []; populateMenuDropdown(); renderMenuTable(); updateDbStatus(true, "Terhubung (Kosong)");
                 }
             } catch (error) {
-                console.error("Gagal menu:", error); appState.dbConnected = false; updateDbStatus(false, "Offline");
+                console.error("Gagal menu:", error); appState.dbConnected = false; updateDbStatus(false, "DB Offline / Error");
             }
         }
 
@@ -795,7 +833,6 @@
                 if (resLaporan.success && Array.isArray(resLaporan.data)) { 
                     appState.laporan = resLaporan.data; 
                 }
-
 
                 const resTerlaris = await apiRequest('/api/statistik/terlaris');
                 if (resTerlaris.success && Array.isArray(resTerlaris.data)) {
