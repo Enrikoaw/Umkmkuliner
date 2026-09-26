@@ -7,9 +7,9 @@ require('dotenv').config();
 
 const app = express();
 
-// Konfigurasi CORS Spesifik (Sesuaikan URL Frontend Anda)
+// Konfigurasi CORS Spesifik 
 app.use(cors({
-    origin: 'https://enrikoaw.github.io/Umkmkuliner', // Ganti dengan URL GitHub Pages frontend Anda
+    origin: 'https://enrikoaw.github.io/Umkmkuliner', 
     optionsSuccessStatus: 200
 }));
 
@@ -17,9 +17,9 @@ app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'lajurasa_secret_key_super_aman';
 
-// ==========================================
+
 // FITUR AUTENTIKASI (JWT & PIN)
-// ==========================================
+
 app.post('/api/login', (req, res) => {
     const { pin } = req.body;
     if (pin === '0000') {
@@ -78,9 +78,9 @@ async function initializeDatabase() {
     }
 }
 
-// ==========================================
+
 // ENDPOINT TERPROTEKSI (Menggunakan authenticateToken)
-// ==========================================
+
 
 // 1. GET /api/menu
 app.get('/api/menu', authenticateToken, async (req, res) => {
