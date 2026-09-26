@@ -581,6 +581,7 @@
         let categoryPieChartInstance = null; 
         
         let currentFilteredLaporan = [];
+        let isUpdating = false; // Tambahkan baris ini
 
         // --- FUNGSI LOGIN (Menggunakan API & JWT) ---
         async function checkLogin() {
@@ -1453,29 +1454,31 @@
         }
 
         async function updateStatusPesanan(pesananId, newStatus) {
-            // 1. OPTIMISTIC UPDATE: Ubah tampilan di layar SEKETIKA (0 delay)
+            isUpdating = true; // Hentikan auto-refresh sementara
+
+            // 1. OPTIMISTIC UPDATE: Ubah tampilan di layar SEKETIKA
             const targetTrx = appState.transactions.find(t => t.id === pesananId || t.Idpesanan === pesananId);
             if (targetTrx) {
                 targetTrx.status = newStatus;
-                renderKitchenQueue(); // Update layar koki seketika
-                renderHistoryKasir(); // Update layar kasir seketika
+                renderKitchenQueue(); 
+                renderHistoryKasir(); 
             }
 
-            // 2. Kirim status ke server diam-diam di background
+            // 2. Kirim status ke server
             try {
                 const result = await apiRequest(`/api/pesanan/${pesananId}/status`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
                 if (result.success) {
                     showAlert(`Pesanan #${pesananId} menjadi ${newStatus}.`); 
-                    // Sinkronkan ulang data di background untuk memastikan keamanan data
-                    loadTransactionsFromDatabase(); 
-                    if (newStatus === 'Selesai') { loadLaporanFromDatabase(); }
+                    await loadTransactionsFromDatabase(); 
+                    if (newStatus === 'Selesai') { await loadLaporanFromDatabase(); }
                 } else { 
                     throw new Error(result.message); 
                 }
             } catch (error) { 
                 showAlert(`Gagal mengubah status: ${error.message}`, 'error'); 
-                // Jika gagal koneksi, kembalikan tampilan seperti semula (revert)
-                loadTransactionsFromDatabase();
+                await loadTransactionsFromDatabase();
+            } finally {
+                isUpdating = false; // Lanjutkan auto-refresh kembali
             }
         }
 
@@ -1510,7 +1513,8 @@
         function closeReceiptModal() { document.getElementById('thermalReceiptModal').classList.add('hidden'); }
 
         setInterval(async () => {
-            if(!document.getElementById('mainAppContainer').classList.contains('hidden')) {
+            // Hanya tarik data jika TIDAK sedang update dan aplikasi sedang terbuka
+            if(!isUpdating && !document.getElementById('mainAppContainer').classList.contains('hidden')) {
                 await loadTransactionsFromDatabase();
             }
         }, 3000);
