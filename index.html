@@ -1454,34 +1454,30 @@
         }
 
         async function updateStatusPesanan(pesananId, newStatus) {
-            isUpdating = true; // Hentikan auto-refresh sementara
+            isUpdating = true; // Kunci sistem agar tidak refresh otomatis saat proses ini berjalan
 
-            // 1. OPTIMISTIC UPDATE: Ubah tampilan di layar SEKETIKA
-            const targetTrx = appState.transactions.find(t => t.id === pesananId || t.Idpesanan === pesananId);
-            if (targetTrx) {
-                targetTrx.status = newStatus;
-                renderKitchenQueue(); 
-                renderHistoryKasir(); 
-            }
-
-            // 2. Kirim status ke server
             try {
+                // Kirim perintah ke server dan TUNGGU prosesnya sampai selesai
                 const result = await apiRequest(`/api/pesanan/${pesananId}/status`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
+                
                 if (result.success) {
-                    showAlert(`Pesanan #${pesananId} menjadi ${newStatus}.`); 
+                    showAlert(`Pesanan #${pesananId} diperbarui menjadi ${newStatus}.`); 
+                    
+                    // Setelah server BERHASIL menyimpan, baru tarik data terbaru untuk merubah layar dapur
                     await loadTransactionsFromDatabase(); 
-                    if (newStatus === 'Selesai') { await loadLaporanFromDatabase(); }
+                    
+                    if (newStatus === 'Selesai') { 
+                        await loadLaporanFromDatabase(); 
+                    }
                 } else { 
                     throw new Error(result.message); 
                 }
             } catch (error) { 
                 showAlert(`Gagal mengubah status: ${error.message}`, 'error'); 
-                await loadTransactionsFromDatabase();
             } finally {
-                isUpdating = false; // Lanjutkan auto-refresh kembali
+                isUpdating = false; // Buka kembali kunci refresh otomatis
             }
         }
-
         function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0); }
         function updateDbStatus(isConnected, txt) { const dot = document.getElementById('dbStatusDot'); if(dot) dot.className = `w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400' : (isConnected===false?'bg-rose-500':'bg-amber-400 animate-pulse')}`; const textEl = document.getElementById('dbStatusText'); if(textEl) textEl.textContent = txt; }
         
