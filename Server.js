@@ -226,56 +226,61 @@ app.post('/api/pesanan', authenticateToken, async (req, res) => {
 });
 
 // 3. GET /api/pesanan 
+// 3. GET /api/pesanan 
 app.get('/api/pesanan', authenticateToken, async (req, res) => {
     try {
+        // PERBAIKAN: Gunakan ALIAS (AS) agar kunci objek selalu konsisten (huruf kecil)
         const [rows] = await pool.query(`
             SELECT 
-                p.Idpesanan, p.Status, p.Total_Harga, p.No_Antrean, p.Tanggal,
-                dp.Iddetail, dp.Idmenu, dp.Jumlah, dp.Subtotal, dp.Catatan,
-                m.Nama_Menu
+                p.Idpesanan AS id, 
+                p.Status AS status, 
+                p.Total_Harga AS total_harga, 
+                p.No_Antrean AS no_antrean, 
+                p.Tanggal AS tanggal,
+                dp.Iddetail AS iddetail, 
+                dp.Idmenu AS idmenu, 
+                dp.Jumlah AS jumlah, 
+                dp.Subtotal AS subtotal, 
+                dp.Catatan AS catatan,
+                m.Nama_Menu AS nama_menu
             FROM pesanan p
             LEFT JOIN detail_pesanan dp ON p.Idpesanan = dp.Idpesanan
             LEFT JOIN menu m ON dp.Idmenu = m.Idmenu
             ORDER BY p.Idpesanan DESC
         `);
 
-        // Menggunakan objek untuk mapping data yang lebih akurat
+        // Grouping data menggunakan ID yang sudah distandardisasi
         const groupedMap = rows.reduce((acc, row) => {
-            const id = row.Idpesanan;
+            const id = row.id;
             
             // Jika pesanan belum ada di map, buat objek baru
             if (!acc[id]) {
                 acc[id] = {
                     id: id,
-                    Idpesanan: id,
-                    status: row.Status,
-                    Status: row.Status,
-                    total_harga: row.Total_Harga,
-                    Total_Harga: row.Total_Harga,
-                    no_antrean: row.No_Antrean,
-                    No_Antrean: row.No_Antrean,
-                    tanggal: row.Tanggal,
-                    Tanggal: row.Tanggal,
+                    status: row.status,
+                    total_harga: row.total_harga,
+                    no_antrean: row.no_antrean,
+                    tanggal: row.tanggal,
                     items: []
                 };
             }
 
-            // Jika baris memiliki relasi detail pesanan, dorong ke dalam array items
-            if (row.Idmenu) {
+            // Jika ada menu terkait (idmenu tidak null), masukkan ke items
+            if (row.idmenu) {
                 acc[id].items.push({
-                    Iddetail: row.Iddetail,
-                    Idmenu: row.Idmenu,
-                    nama_menu: row.Nama_Menu,
-                    jumlah: row.Jumlah,
-                    subtotal: row.Subtotal,
-                    catatan: row.Catatan
+                    iddetail: row.iddetail,
+                    idmenu: row.idmenu,
+                    nama_menu: row.nama_menu,
+                    jumlah: row.jumlah,
+                    subtotal: row.subtotal,
+                    catatan: row.catatan
                 });
             }
             
             return acc;
         }, {});
 
-        // Mengubah objek map kembali menjadi array dan menjaga urutan DESC
+        // Mengubah objek kembali ke array dan mengurutkan dari yang terbaru
         const groupedData = Object.values(groupedMap).sort((a, b) => b.id - a.id);
 
         res.json({ success: true, data: groupedData });
