@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LAJU RASA SYSTEM</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     
     <!-- TEMA WARNA CUSTOM (#53CBF3) -->
     <script>
@@ -583,6 +584,21 @@
         let currentFilteredLaporan = [];
         let isUpdating = false; // Tambahkan baris ini
 
+        // Fungsi untuk mencegah XSS
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, function(tag) {
+        const charsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return charsToReplace[tag] || tag;
+    });
+}
+
         // --- FUNGSI LOGIN (Menggunakan API & JWT) ---
         async function checkLogin() {
             const inputPin = document.getElementById('loginPin').value;
@@ -1138,7 +1154,9 @@
             const sortedMenus = [...appState.menus].sort((a, b) => a.name.localeCompare(b.name));
             
             sortedMenus.forEach(m => {
-                tbody.innerHTML += `
+            const safeName = escapeHTML(m.name);
+            const safeCategory = escapeHTML(m.category);
+            tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
                         <td class="py-3 px-4 font-semibold text-slate-800">${m.name}</td>
                         <td class="py-3 px-4 text-slate-600 text-xs">${m.category}</td>
@@ -1275,8 +1293,11 @@
             let totalMenuOnly = 0;
             
             appState.cart.forEach(item => {
-                totalMenuOnly += item.subtotal;
-                cartBody.innerHTML += `<tr><td class="py-2 px-3 font-semibold text-slate-800">${item.name} ${item.notes ? `<div class="text-[10px] text-slate-400 italic">${item.notes}</div>` : ''}</td><td class="py-2 px-2 text-center font-bold text-slate-700">${item.qty}</td><td class="py-2 px-3 text-right font-bold text-emerald-700">${formatRupiah(item.subtotal)}</td><td class="py-2 px-2 text-center"><button onclick="removeCartItem(${item.cartId})" class="text-rose-500 font-bold p-1">✕</button></td></tr>`;
+            totalMenuOnly += item.subtotal;
+            const safeName = escapeHTML(item.name); // Sanitasi nama
+            const safeNotes = escapeHTML(item.notes); // Sanitasi catatan
+
+            cartBody.innerHTML += `<tr><td class="py-2 px-3 font-semibold text-slate-800">${safeName} ${safeNotes ? `<div class="text-[10px] text-slate-400 italic">${safeNotes}</div>` : ''}</td><td class="py-2 px-2 text-center font-bold text-slate-700">${item.qty}</td><td class="py-2 px-3 text-right font-bold text-emerald-700">${formatRupiah(item.subtotal)}</td><td class="py-2 px-2 text-center"><button onclick="removeCartItem(${item.cartId})" class="text-rose-500 font-bold p-1">✕</button></td></tr>`;
             });
             
             // KALKULASI PAJAK (PENGECUALIAN UNTUK TAKEAWAY)
@@ -1414,8 +1435,9 @@
                 
                 // Menampilkan catatan dari DB jika tersedia
                 const itemsList = Array.isArray(trx.items) ? trx.items.map(i => {
-                    const note = i.catatan || i.Catatan || i.notes;
-                    return `${i.nama_menu} (x${i.jumlah})${note ? ` [${note}]` : ''}`;
+                const note = escapeHTML(i.catatan || i.Catatan || i.notes || '');
+                const name = escapeHTML(i.nama_menu || '');
+                return `${name} (x${i.jumlah})${note ? ` [${note}]` : ''}`;
                 }).join(', ') : '-';
 
                 container.innerHTML += `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 shadow-xs"><div class="flex justify-between items-start mb-2"><div><span class="font-extrabold text-slate-800 text-sm bg-slate-200 px-2 py-0.5 rounded-md mr-1">#${trx.no_antrean || trx.id}</span> <span class="font-bold text-slate-500 text-[10px]">ID:${trx.id}</span> <span class="text-[10px] text-slate-500 ml-1 font-medium">🕒 ${timeStrTrx}</span></div><span class="font-extrabold text-emerald-700 text-sm">${formatRupiah(trx.total_harga)}</span></div><div class="flex justify-between items-end"><div class="text-[11px] text-slate-600 line-clamp-2 w-3/4"><strong>Pesanan:</strong> ${itemsList}</div><span class="text-[9px] font-bold px-2 py-1 rounded-md ${badgeColor}">${trx.status}</span></div></div>`;
@@ -1440,9 +1462,10 @@
                 
                 // Menampilkan catatan dari DB untuk koki
                 if (Array.isArray(trx.items)) { 
-                    trx.items.forEach(item => { 
-                        const note = item.catatan || item.Catatan || item.notes;
-                        cardHtml += `<li class="flex justify-between items-start border-b border-slate-200 border-dashed pb-2"><div><span class="block">${item.nama_menu}</span>${note ? `<span class="text-[10px] text-rose-500 italic block mt-0.5 font-bold">Catatan: ${note}</span>` : ''}</div><span class="bg-slate-200 text-slate-700 px-2 rounded-md font-bold text-xs mt-0.5">x${item.jumlah}</span></li>`; 
+                trx.items.forEach(item => { 
+                const note = escapeHTML(item.catatan || item.Catatan || item.notes || '');
+                const name = escapeHTML(item.nama_menu || '');
+                cardHtml += `<li class="flex justify-between items-start border-b border-slate-200 border-dashed pb-2"><div><span class="block">${name}</span>${note ? `<span class="text-[10px] text-rose-500 italic block mt-0.5 font-bold">Catatan: ${note}</span>` : ''}</div><span class="bg-slate-200 text-slate-700 px-2 rounded-md font-bold text-xs mt-0.5">x${item.jumlah}</span></li>`; 
                     }); 
                 }
 
@@ -1499,8 +1522,9 @@
             
             // Render menu item lengkap dengan catatan pada struk
             document.getElementById('recItemsBody').innerHTML = trx.items.map(i => {
-                const note = i.notes || i.catatan || i.Catatan;
-                return `<tr><td class="py-1">${i.name} ${note ? `<div class="italic text-[9px] text-slate-500">${note}</div>` : ''}</td><td class="py-1 text-center font-bold">x${i.qty}</td><td class="py-1 text-right font-bold">${formatRupiah(i.subtotal)}</td></tr>`;
+            const note = escapeHTML(i.notes || i.catatan || i.Catatan || '');
+            const name = escapeHTML(i.name || '');
+            return `<tr><td class="py-1">${name} ${note ? `<div class="italic text-[9px] text-slate-500">${note}</div>` : ''}</td><td class="py-1 text-center font-bold">x${i.qty}</td><td class="py-1 text-right font-bold">${formatRupiah(i.subtotal)}</td></tr>`;
             }).join('');
             
             document.getElementById('thermalReceiptModal').classList.remove('hidden');
@@ -1508,12 +1532,20 @@
 
         function closeReceiptModal() { document.getElementById('thermalReceiptModal').classList.add('hidden'); }
 
-        setInterval(async () => {
-            // Hanya tarik data jika TIDAK sedang update dan aplikasi sedang terbuka
-            if(!isUpdating && !document.getElementById('mainAppContainer').classList.contains('hidden')) {
-                await loadTransactionsFromDatabase();
-            }
-        }, 3000);
+        // Inisialisasi koneksi WebSocket
+const socket = io(BACKEND_BASE_URL || window.location.origin);
+
+// Dengarkan event pembaruan dari server
+socket.on('pesanan_update', async () => {
+    if (!isUpdating && !document.getElementById('mainAppContainer').classList.contains('hidden')) {
+        await loadTransactionsFromDatabase();
+        
+        // Refresh laporan secara instan jika tab laporan sedang terbuka
+        if (document.getElementById('viewLaporan').classList.contains('active')) {
+            await loadLaporanFromDatabase();
+        }
+    }
+});
         
     </script>
 </body>

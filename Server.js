@@ -1,15 +1,21 @@
 console.log("⏳ Mulai menjalankan Server.js...");
+const bcrypt = require('bcrypt');
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
 const jwt = require('jsonwebtoken');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
-
+const server = http.createServer(app); 
+const io = new Server(server, {        
+    cors: { origin: true, credentials: true }
+});
 // Konfigurasi CORS Spesifik 
 app.use(cors({
-    origin: true,
+    origin: 'https://umkmkuliner.onrender.com',
     credentials: true
 }));
 
@@ -22,24 +28,38 @@ app.use(express.static(path.join(__dirname)));
 const JWT_SECRET = process.env.JWT_SECRET || 'lajurasa_secret_key_super_aman';
 
 
-// FITUR AUTENTIKASI (JWT & PIN)
-
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { pin } = req.body;
-    if (pin === '0000') {
-        const token = jwt.sign({ role: 'kasir' }, JWT_SECRET, { expiresIn: '12h' });
-        res.json({ success: true, token });
-    } else {
+    try {
+        const [rows] = await pool.query('SELECT pin_hash FROM pengguna WHERE role = "kasir" LIMIT 1');
+        
+        if (rows.length > 0) {
+            const match = await bcrypt.compare(pin, rows[0].pin_hash);
+            if (match) {
+                const token = jwt.sign({ role: 'kasir' }, JWT_SECRET, { expiresIn: '12h' });
+                return res.json({ success: true, token });
+            }
+        }
         res.status(401).json({ success: false, message: 'PIN salah' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-app.post('/api/verify-manager', (req, res) => {
+app.post('/api/verify-manager', async (req, res) => {
     const { pin } = req.body;
-    if (pin === '1111') {
-        res.json({ success: true });
-    } else {
+    try {
+        const [rows] = await pool.query('SELECT pin_hash FROM pengguna WHERE role = "manager" LIMIT 1');
+        
+        if (rows.length > 0) {
+            const match = await bcrypt.compare(pin, rows[0].pin_hash);
+            if (match) {
+                return res.json({ success: true });
+            }
+        }
         res.status(401).json({ success: false, message: 'PIN Manager salah' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -191,6 +211,8 @@ app.post('/api/pesanan', authenticateToken, async (req, res) => {
         await connection.commit();
         connection.release();
 
+        io.emit('pesanan_update');
+
         res.status(201).json({ 
             success: true, 
             message: 'Pesanan berhasil dibuat.', 
@@ -252,6 +274,9 @@ app.put('/api/pesanan/:id/status', authenticateToken, async (req, res) => {
 
         await connection.commit();
         connection.release();
+
+        io.emit('pesanan_update');
+        
         res.json({ success: true, message: `Status diubah menjadi ${status}.` });
     } catch (error) {
         await connection.rollback();
@@ -322,5 +347,5 @@ app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 initializeDatabase().then(() => {
-    app.listen(PORT, () => console.log(`✅ Server berjalan di http://localhost:${PORT}`));
+    server.listen(PORT, () => console.log(`✅ Server berjalan di http://localhost:${PORT}`));
 });
