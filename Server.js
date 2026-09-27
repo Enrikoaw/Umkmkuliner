@@ -9,11 +9,15 @@ const app = express();
 
 // Konfigurasi CORS Spesifik 
 app.use(cors({
-    origin: 'https://enrikoaw.github.io', 
-    optionsSuccessStatus: 200
+    origin: true,
+    credentials: true
 }));
 
 app.use(express.json());
+const path = require('path');
+
+// Agar server melayani file statis frontend
+app.use(express.static(path.join(__dirname)));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'lajurasa_secret_key_super_aman';
 
@@ -314,6 +318,9 @@ app.get('/api/statistik/terlaris', authenticateToken, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 initializeDatabase().then(() => {
     app.listen(PORT, () => console.log(`✅ Server berjalan di http://localhost:${PORT}`));
 });
