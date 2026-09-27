@@ -228,10 +228,11 @@ app.post('/api/pesanan', authenticateToken, async (req, res) => {
 // 3. GET /api/pesanan 
 app.get('/api/pesanan', authenticateToken, async (req, res) => {
     try {
+        // HAPUS dp.Iddetail dari SELECT
         const [rows] = await pool.query(`
             SELECT 
                 p.Idpesanan, p.Status, p.Total_Harga, p.No_Antrean, p.Tanggal,
-                dp.Iddetail, dp.Idmenu, dp.Jumlah, dp.Subtotal, dp.Catatan,
+                dp.Idmenu, dp.Jumlah, dp.Subtotal, dp.Catatan,
                 m.Nama_Menu
             FROM pesanan p
             LEFT JOIN detail_pesanan dp ON p.Idpesanan = dp.Idpesanan
@@ -239,20 +240,17 @@ app.get('/api/pesanan', authenticateToken, async (req, res) => {
             ORDER BY p.Idpesanan DESC
         `);
 
-        // Menyusun ulang data dengan mempertahankan kombinasi huruf besar & kecil
         const groupedMap = rows.reduce((acc, row) => {
             const id = row.Idpesanan;
             
             if (!acc[id]) {
                 acc[id] = {
-                    // Menyertakan format huruf besar (wajib untuk kompabilitas fungsi lama)
                     Idpesanan: row.Idpesanan,
                     Status: row.Status,
                     Total_Harga: row.Total_Harga,
                     No_Antrean: row.No_Antrean,
                     Tanggal: row.Tanggal,
                     
-                    // Menyertakan format huruf kecil (untuk UI Kasir & Dapur)
                     id: row.Idpesanan,
                     status: row.Status,
                     total_harga: row.Total_Harga,
@@ -264,7 +262,7 @@ app.get('/api/pesanan', authenticateToken, async (req, res) => {
 
             if (row.Idmenu) {
                 acc[id].items.push({
-                    Iddetail: row.Iddetail,
+                    // HAPUS Iddetail: row.Iddetail dari sini
                     Idmenu: row.Idmenu,
                     Jumlah: row.Jumlah,
                     Subtotal: row.Subtotal,
