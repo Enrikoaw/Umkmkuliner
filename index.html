@@ -7,15 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     
-    <!-- TEMA WARNA CUSTOM (#53CBF3) -->
+    <!-- TEMA WARNA CUSTOM (Royal Navy & Tembaga) -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        emerald: {
-                            50: '#f0faff', 100: '#e0f4fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8',
-                            500: '#53CBF3', 600: '#0ea5e9', 700: '#0284c7', 800: '#0369a1', 900: '#075985',
+                        navy: {
+                            50: '#eff2f6', 100: '#dce4ed', 200: '#bdccde', 300: '#95afc9', 400: '#698fb1',
+                            500: '#487396', 600: '#355c7e', 700: '#2c4a66', 800: '#0B1D3A', 900: '#07162c',
+                        },
+                        copper: {
+                            50: '#fcf6f1', 100: '#f8eadb', 200: '#f0d0b1', 300: '#e5b081', 400: '#d88d55',
+                            500: '#B87333', 600: '#ab5e26', 700: '#8e4921', 800: '#733c20', 900: '#5e321d',
+                        },
+                        gold: {
+                            500: '#FFD700'
+                        },
+                        ink: {
+                            900: '#0A1128'
                         }
                     }
                 }
@@ -62,12 +72,13 @@
             font-weight: 300;
         }
         
+        /* Ubah warna background login menjadi Navy elegan */
         .login-bg {
-            background: linear-gradient(135deg, #53CBF3 0%, #075985 100%);
+            background: linear-gradient(135deg, #0B1D3A 0%, #07162c 100%);
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 h-full flex flex-col min-h-screen relative overflow-x-hidden">
+<body class="bg-slate-100 text-ink-900 h-full flex flex-col min-h-screen relative overflow-x-hidden">
     
     <!-- OVERLAY LOGIN -->
     <div id="loginOverlay" class="fixed inset-0 login-bg z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-500">
@@ -76,7 +87,7 @@
                 <img src="Logo.png" alt="lajurasa" class="w-32 h-32 object-contain drop-shadow-md">
                 <div>
                     <h2 class="text-3xl font-light tracking-wide text-white mb-2">Welcome Aplikasi <br> Laju Rasa</h2>
-                    <p class="text-sm text-emerald-100 font-light italic">"Operasional umkm kuliner yang lebih cepat (laju) berkat otomatisasi alur kerja" <BR> ---By Kelompok C---<br>CP44</p>
+                    <p class="text-sm text-navy-200 font-light italic">"Operasional umkm kuliner yang lebih cepat (laju) berkat otomatisasi alur kerja" <BR> ---By Kelompok C---<br>CP44</p>
                 </div>
             </div>
             <div class="space-y-8 pt-4 w-3/4 mx-auto">
@@ -84,43 +95,43 @@
                     <svg class="w-5 h-5 text-white absolute left-0 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     <input type="password" id="loginPin" placeholder="Password" class="login-input text-center tracking-[0.5em] font-bold" onkeypress="if(event.key === 'Enter') checkLogin()">
                 </div>
-                <button onclick="checkLogin()" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold tracking-widest text-sm py-4 rounded transition shadow-lg mt-4 uppercase">Login</button>
+                <button onclick="checkLogin()" class="w-full bg-copper-500 hover:bg-copper-600 text-white font-semibold tracking-widest text-sm py-4 rounded transition shadow-lg mt-4 uppercase">Login</button>
             </div>
-            <p id="loginError" class="text-sm text-amber-200 font-medium hidden animate-pulse">PIN yang Anda masukkan salah!</p>
+            <p id="loginError" class="text-sm text-gold-500 font-medium hidden animate-pulse">PIN yang Anda masukkan salah!</p>
         </div>
     </div>
 
     <!-- MAIN APP CONTAINER -->
     <div id="mainAppContainer" class="hidden flex-col h-full min-h-screen">
-        <header class="bg-emerald-800 text-white shadow-lg sticky top-0 z-30">
+        <header class="bg-navy-800 text-white shadow-lg sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center space-x-3">
                     <img src="Logo.png" alt="lajurasa" class="w-16 h-16 object-contain">
                     <div>
                         <h1 class="text-base font-bold tracking-tight">Laju Rasa</h1>
-                        <p class="text-[11px] text-emerald-200 font-medium">Kasir, Dapur & Laporan Real-Time</p>
+                        <p class="text-[11px] text-navy-200 font-medium">Kasir, Dapur & Laporan Real-Time</p>
                     </div>
                 </div>
                 
-                <nav class="flex items-center gap-1 bg-emerald-900/60 p-1 rounded-xl border border-emerald-700/50">
-                    <button onclick="switchTab('kasir')" id="tabBtnKasir" class="px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-emerald-900 shadow-sm">
+                <nav class="flex items-center gap-1 bg-navy-900/60 p-1 rounded-xl border border-navy-700/50">
+                    <button onclick="switchTab('kasir')" id="tabBtnKasir" class="px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-navy-900 shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg><span>Kasir</span>
                     </button>
-                    <button onclick="switchTab('dapur')" id="tabBtnDapur" class="px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-emerald-200 hover:text-white hover:bg-emerald-700">
+                    <button onclick="switchTab('dapur')" id="tabBtnDapur" class="px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-navy-200 hover:text-white hover:bg-navy-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg><span>Layar Dapur</span>
-                        <span id="kitchenBadgeNav" class="bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded-full text-[9px] hidden">0</span>
+                        <span id="kitchenBadgeNav" class="bg-gold-500 text-ink-900 px-1.5 py-0.5 rounded-full text-[9px] hidden">0</span>
                     </button>
-                    <button onclick="openSidebar()" id="tabBtnLainnya" class="px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-emerald-200 hover:text-white hover:bg-emerald-700">
+                    <button onclick="openSidebar()" id="tabBtnLainnya" class="px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-navy-200 hover:text-white hover:bg-navy-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menu Lainnya</span>
                     </button>
                 </nav>
 
                 <div class="flex items-center gap-4">
-                    <div class="hidden sm:flex items-center gap-2 bg-emerald-900/80 px-3 py-1.5 rounded-xl border border-emerald-600/50">
-                        <span id="dbStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                        <span id="dbStatusText" class="text-xs text-emerald-100 font-medium">Memeriksa...</span>
+                    <div class="hidden sm:flex items-center gap-2 bg-navy-900/80 px-3 py-1.5 rounded-xl border border-navy-600/50">
+                        <span id="dbStatusDot" class="w-2.5 h-2.5 rounded-full bg-gold-500"></span>
+                        <span id="dbStatusText" class="text-xs text-navy-100 font-medium">Memeriksa...</span>
                     </div>
-                    <button onclick="refreshDataDariDatabase()" class="bg-emerald-700 hover:bg-emerald-600 text-emerald-100 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-emerald-500/50 shadow-sm">
+                    <button onclick="refreshDataDariDatabase()" class="bg-navy-700 hover:bg-navy-600 text-navy-100 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-navy-500/50 shadow-sm">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span>Sinkron API</span>
                     </button>
                 </div>
@@ -128,22 +139,22 @@
         </header>
 
         <!-- OVERLAY SIDEBAR -->
-        <div id="sidebarOverlay" onclick="closeSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
+        <div id="sidebarOverlay" onclick="closeSidebar()" class="fixed inset-0 bg-ink-900/50 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
         
         <!-- SIDEBAR KANAN -->
         <div id="rightSidebar" class="fixed inset-y-0 right-0 z-50 w-72 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-            <div class="p-4 bg-emerald-800 text-white flex justify-between items-center shadow-md">
+            <div class="p-4 bg-navy-800 text-white flex justify-between items-center shadow-md">
                 <h3 class="font-bold text-base flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg> Navigasi Menu
                 </h3>
-                <button onclick="closeSidebar()" class="text-emerald-200 hover:text-white text-2xl leading-none">&times;</button>
+                <button onclick="closeSidebar()" class="text-navy-200 hover:text-white text-2xl leading-none">&times;</button>
             </div>
             
             <div class="p-5 flex flex-col gap-3 bg-slate-50 flex-1">
                 <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Pilihan Manajerial <span class="text-rose-500 text-[10px]">(PIN Required)</span></p>
                 
-                <button onclick="switchTab('menu'); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl font-bold text-sm border border-slate-200 hover:border-emerald-300 shadow-sm transition flex items-center gap-3">
-                    <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                <button onclick="switchTab('menu'); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-navy-50 text-slate-700 hover:text-navy-800 rounded-xl font-bold text-sm border border-slate-200 hover:border-navy-300 shadow-sm transition flex items-center gap-3">
+                    <div class="p-2 bg-navy-100 text-navy-800 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                     </div>
                     <div>
@@ -152,8 +163,8 @@
                     </div>
                 </button>
                 
-                <button onclick="switchTab('laporan'); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl font-bold text-sm border border-slate-200 hover:border-emerald-300 shadow-sm transition flex items-center gap-3">
-                    <div class="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                <button onclick="switchTab('laporan'); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-copper-50 text-slate-700 hover:text-copper-700 rounded-xl font-bold text-sm border border-slate-200 hover:border-copper-300 shadow-sm transition flex items-center gap-3">
+                    <div class="p-2 bg-copper-100 text-copper-600 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     </div>
                     <div>
@@ -164,8 +175,8 @@
 
                 <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1 mt-2">Informasi Tambahan</p>
                 
-                <button onclick="openFeatureInfo(); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-xl font-bold text-sm border border-slate-200 hover:border-blue-300 shadow-sm transition flex items-center gap-3">
-                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                <button onclick="openFeatureInfo(); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-slate-100 text-slate-700 hover:text-ink-900 rounded-xl font-bold text-sm border border-slate-200 hover:border-slate-300 shadow-sm transition flex items-center gap-3">
+                    <div class="p-2 bg-slate-200 text-slate-600 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                     <div>
@@ -197,49 +208,49 @@
                 <div class="lg:col-span-7 space-y-6">
                     <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-5">
                         <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span><h2 class="text-base font-bold text-slate-800">Transaksi Baru</h2></div>
+                            <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-copper-500 animate-pulse"></span><h2 class="text-base font-bold text-ink-900">Transaksi Baru</h2></div>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Lokasi / Meja Pembeli <span class="text-rose-500">*</span></label>
-                            <select id="tableSelect" onchange="renderCart()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <select id="tableSelect" onchange="renderCart()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-900 focus:ring-2 focus:ring-copper-500 focus:outline-none">
                                 <option value="Meja 1">Meja No 1</option><option value="Meja 2">Meja No 2</option>
                                 <option value="Meja 3">Meja No 3</option><option value="Meja 4">Meja No 4</option>
                                 <option value="Meja 5">Meja No 5</option><option value="Meja 6">Meja No 6</option>
                                 <option value="Bungkus (Takeaway)">Bungkus / Takeaway</option>
                             </select>
                         </div>
-                        <div class="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 space-y-3">
-                            <label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider">Tambah Menu Ke Pesanan</label>
+                        <div class="bg-navy-50/70 p-4 rounded-xl border border-navy-200/80 space-y-3">
+                            <label class="block text-xs font-bold text-navy-900 uppercase tracking-wider">Tambah Menu Ke Pesanan</label>
                             
                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                                 <div class="sm:col-span-3">
-                                    <label class="block text-[11px] font-medium text-emerald-800 mb-1">Pilih Makanan</label>
-                                    <select id="itemMenuSelectMakanan" onchange="document.getElementById('itemMenuSelectMinuman').value='';" class="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    <label class="block text-[11px] font-medium text-navy-800 mb-1">Pilih Makanan</label>
+                                    <select id="itemMenuSelectMakanan" onchange="document.getElementById('itemMenuSelectMinuman').value='';" class="w-full bg-white border border-navy-300 rounded-xl px-3 py-2 text-sm text-ink-900 focus:ring-2 focus:ring-copper-500 focus:outline-none">
                                         <option value="">Memuat...</option>
                                     </select>
                                 </div>
                                 <div class="sm:col-span-3">
-                                    <label class="block text-[11px] font-medium text-emerald-800 mb-1">Pilih Minuman</label>
-                                    <select id="itemMenuSelectMinuman" onchange="document.getElementById('itemMenuSelectMakanan').value='';" class="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                    <label class="block text-[11px] font-medium text-navy-800 mb-1">Pilih Minuman</label>
+                                    <select id="itemMenuSelectMinuman" onchange="document.getElementById('itemMenuSelectMakanan').value='';" class="w-full bg-white border border-navy-300 rounded-xl px-3 py-2 text-sm text-ink-900 focus:ring-2 focus:ring-copper-500 focus:outline-none">
                                         <option value="">Memuat...</option>
                                     </select>
                                 </div>
                                 <div class="sm:col-span-3">
-                                    <label class="block text-[11px] font-medium text-emerald-800 mb-1">Porsi / Qty</label>
-                                    <input type="number" id="itemQty" min="1" value="1" class="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 text-center">
+                                    <label class="block text-[11px] font-medium text-navy-800 mb-1">Porsi / Qty</label>
+                                    <input type="number" id="itemQty" min="1" value="1" class="w-full bg-white border border-navy-300 rounded-xl px-3 py-2 text-sm font-semibold text-ink-900 focus:ring-2 focus:ring-copper-500 text-center">
                                 </div>
                                 <div class="sm:col-span-3">
-                                    <button type="button" onclick="addItemToCart()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded-xl transition duration-150 flex items-center justify-center gap-1.5 shadow-sm">
+                                    <button type="button" onclick="addItemToCart()" class="w-full bg-copper-500 hover:bg-copper-600 text-white font-bold py-2 px-3 rounded-xl transition duration-150 flex items-center justify-center gap-1.5 shadow-sm">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg><span>Tambah</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <div><input type="text" id="itemNotes" placeholder="Catatan khusus menu (misal: Sedang, Pedas, Kuah pisah)" class="w-full bg-white border border-emerald-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none"></div>
+                            <div><input type="text" id="itemNotes" placeholder="Catatan khusus menu (misal: Sedang, Pedas, Kuah pisah)" class="w-full bg-white border border-navy-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-copper-500 focus:outline-none"></div>
                         </div>
                         <div>
                             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex justify-between items-center">
-                                <span>Keranjang Pesanan</span><span id="cartCountBadge" class="bg-emerald-100 text-emerald-700 font-extrabold text-[11px] px-2 py-0.5 rounded-full">0 Item</span>
+                                <span>Keranjang Pesanan</span><span id="cartCountBadge" class="bg-navy-100 text-navy-800 font-extrabold text-[11px] px-2 py-0.5 rounded-full">0 Item</span>
                             </h3>
                             <div class="border border-slate-200 rounded-xl overflow-hidden min-h-[140px] bg-slate-50/50">
                                 <table class="w-full text-left text-xs">
@@ -252,9 +263,9 @@
                             </div>
                             <div id="taxNoteInfo" class="mt-2 text-right text-[10px] font-semibold text-slate-500">* Total tagihan di bawah ini sudah termasuk PPN 10%</div>
                         </div>
-                        <div class="bg-slate-900 text-white p-4 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-4">
-                            <div><div class="text-[10px] text-slate-400 uppercase tracking-wider">Total Tagihan</div><div id="cartGrandTotal" class="text-2xl font-extrabold text-emerald-400">Rp 0</div></div>
-                            <button onclick="openPaymentModal()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-8 py-3.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                        <div class="bg-ink-900 text-white p-4 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div><div class="text-[10px] text-navy-200 uppercase tracking-wider">Total Tagihan</div><div id="cartGrandTotal" class="text-2xl font-extrabold text-gold-500">Rp 0</div></div>
+                            <button onclick="openPaymentModal()" class="w-full sm:w-auto bg-copper-500 hover:bg-copper-600 text-white font-bold px-8 py-3.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg><span>Bayar & Cetak</span>
                             </button>
                         </div>
@@ -263,8 +274,8 @@
                 <div class="lg:col-span-5 space-y-6">
                     <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col h-[700px]">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-base font-bold text-slate-800">Pesanan Hari Ini</h2>
-                            <span id="historyCountBadge" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">0 Pesanan</span>
+                            <h2 class="text-base font-bold text-ink-900">Pesanan Hari Ini</h2>
+                            <span id="historyCountBadge" class="text-xs bg-navy-100 text-navy-800 font-bold px-2.5 py-0.5 rounded-full">0 Pesanan</span>
                         </div>
                         <div id="transactionHistoryContainer" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
                     </section>
@@ -276,10 +287,10 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 min-h-[700px]">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
                         <div>
-                            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z"/></svg>Antrean Dapur (Kitchen Display System)</h2>
+                            <h2 class="text-lg font-bold text-ink-900 flex items-center gap-2"><svg class="w-6 h-6 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z"/></svg>Antrean Dapur (Kitchen Display System)</h2>
                             <p class="text-xs text-slate-500 mt-1">Layar khusus koki. Klik 'Selesai' agar pendapatan otomatis tercatat di Laporan Keuangan.</p>
                         </div>
-                        <div class="flex gap-2 text-[10px] font-bold"><span class="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 border border-amber-200">Menunggu (Pending)</span><span class="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-200">Sedang Dimasak (Diproses)</span></div>
+                        <div class="flex gap-2 text-[10px] font-bold"><span class="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 border border-amber-200">Menunggu (Pending)</span><span class="px-3 py-1.5 rounded-lg bg-navy-100 text-navy-800 border border-navy-200">Sedang Dimasak (Diproses)</span></div>
                     </div>
                     <div id="kitchenGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
                 </div>
@@ -290,7 +301,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 min-h-[700px]">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
                         <div>
-                            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Laporan & Analitik Penjualan</h2>
+                            <h2 class="text-lg font-bold text-ink-900 flex items-center gap-2"><svg class="w-6 h-6 text-navy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Laporan & Analitik Penjualan</h2>
                             <p class="text-xs text-slate-500 mt-1">Filter tanggal terlebih dahulu untuk melihat visualisasi data laporan Laba Kotor & Bersih.</p>
                         </div>
                     </div>
@@ -300,14 +311,14 @@
                         <div class="flex flex-wrap gap-4 items-end">
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-600 mb-1">Dari Tanggal:</label>
-                                <input type="date" id="filterStartDate" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm cursor-pointer">
+                                <input type="date" id="filterStartDate" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-ink-900 focus:ring-2 focus:ring-copper-500 outline-none shadow-sm cursor-pointer">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-600 mb-1">Sampai Tanggal:</label>
-                                <input type="date" id="filterEndDate" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm cursor-pointer">
+                                <input type="date" id="filterEndDate" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-ink-900 focus:ring-2 focus:ring-copper-500 outline-none shadow-sm cursor-pointer">
                             </div>
                             <div>
-                                <button onclick="prosesFilterLaporan()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-md text-sm flex items-center gap-2">
+                                <button onclick="prosesFilterLaporan()" class="bg-navy-800 hover:bg-navy-900 text-white font-bold py-2 px-6 rounded-lg transition shadow-md text-sm flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                                     Tampilkan Data
                                 </button>
@@ -317,8 +328,8 @@
 
                     <div id="laporanContent" class="hidden transition-all duration-300">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-sm font-bold text-slate-800">Hasil Laporan</h3>
-                            <button onclick="downloadExcelLaporan()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 shadow-sm transition">
+                            <h3 class="text-sm font-bold text-ink-900">Hasil Laporan</h3>
+                            <button onclick="downloadExcelLaporan()" class="bg-navy-600 hover:bg-navy-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 shadow-sm transition">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                 Unduh Excel (CSV)
                             </button>
@@ -382,8 +393,8 @@
             <div id="viewMenu" class="tab-content grid-cols-1">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 min-h-[700px]">
                     <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">Kelola Daftar Menu</h2>
-                        <button onclick="openMenuModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
+                        <h2 class="text-lg font-bold text-ink-900 flex items-center gap-2">Kelola Daftar Menu</h2>
+                        <button onclick="openMenuModal()" class="bg-copper-500 hover:bg-copper-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
                             <span>+ Tambah Menu</span>
                         </button>
                     </div>
@@ -409,94 +420,94 @@
     </div> <!-- END OF MAIN APP CONTAINER -->
 
     <!-- MODAL PEMBAYARAN KASIR -->
-    <div id="paymentModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-40 hidden flex justify-center items-center p-4">
+    <div id="paymentModal" class="fixed inset-0 bg-ink-900/70 backdrop-blur-sm z-40 hidden flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-            <div class="bg-emerald-800 text-white p-4 flex justify-between items-center"><h3 class="font-bold text-lg flex items-center gap-2">Proses Pembayaran</h3><button type="button" onclick="closePaymentModal()" class="text-emerald-200 hover:text-white text-2xl leading-none">&times;</button></div>
+            <div class="bg-navy-800 text-white p-4 flex justify-between items-center"><h3 class="font-bold text-lg flex items-center gap-2">Proses Pembayaran</h3><button type="button" onclick="closePaymentModal()" class="text-navy-200 hover:text-white text-2xl leading-none">&times;</button></div>
             <div class="p-5 space-y-5 bg-slate-50">
-                <div class="text-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Total yang harus dibayar</div><div id="payGrandTotal" class="text-3xl font-extrabold text-emerald-600">Rp 0</div></div>
+                <div class="text-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Total yang harus dibayar</div><div id="payGrandTotal" class="text-3xl font-extrabold text-copper-600">Rp 0</div></div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Metode Pembayaran</label>
-                    <select id="payMethodSelect" onchange="toggleCashInput()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-sm">
+                    <select id="payMethodSelect" onchange="toggleCashInput()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-sm font-semibold text-ink-900 focus:ring-2 focus:ring-copper-500 focus:outline-none shadow-sm">
                         <option value="Tunai">Uang Tunai / Cash</option>
                         <option value="QRIS">QRIS / E-Wallet</option>
                     </select>
                 </div>
                 <div id="cashInputSection" class="space-y-4">
-                    <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Uang Diterima (Tunai)</label><input type="number" id="payTendered" oninput="calculateChange()" placeholder="0" class="w-full bg-white border border-emerald-400 rounded-xl px-4 py-3 text-lg font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-sm"></div>
-                    <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-xl border border-emerald-200"><span class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Kembalian</span><span id="payChange" class="text-xl font-extrabold text-emerald-700">Rp 0</span></div>
+                    <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Uang Diterima (Tunai)</label><input type="number" id="payTendered" oninput="calculateChange()" placeholder="0" class="w-full bg-white border border-copper-400 rounded-xl px-4 py-3 text-lg font-bold text-ink-900 focus:ring-2 focus:ring-copper-500 focus:outline-none shadow-sm"></div>
+                    <div class="flex justify-between items-center bg-navy-50 p-3 rounded-xl border border-navy-200"><span class="text-xs font-bold text-navy-800 uppercase tracking-wider">Kembalian</span><span id="payChange" class="text-xl font-extrabold text-navy-700">Rp 0</span></div>
                 </div>
             </div>
             <div class="p-4 bg-white border-t border-slate-200 flex gap-3">
-                <button type="button" onclick="closePaymentModal()" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-xl transition text-sm">Batal</button>
-                <button type="button" onclick="confirmPayment()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg text-sm flex justify-center items-center gap-2"><span>Selesaikan Transaksi</span></button>
+                <button type="button" onclick="closePaymentModal()" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-ink-900 font-bold py-3 rounded-xl transition text-sm">Batal</button>
+                <button type="button" onclick="confirmPayment()" class="w-2/3 bg-copper-500 hover:bg-copper-600 text-white font-bold py-3 rounded-xl transition shadow-lg text-sm flex justify-center items-center gap-2"><span>Selesaikan Transaksi</span></button>
             </div>
         </div>
     </div>
 
     <!-- MODAL TAMBAH/EDIT MENU -->
-    <div id="menuModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+    <div id="menuModal" class="fixed inset-0 bg-ink-900/70 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
-            <div class="bg-emerald-800 text-white p-4 flex justify-between items-center">
+            <div class="bg-navy-800 text-white p-4 flex justify-between items-center">
                 <h3 id="menuModalTitle" class="font-bold text-lg">Tambah Menu</h3>
-                <button type="button" onclick="closeMenuModal()" class="text-emerald-200 hover:text-white text-2xl leading-none">&times;</button>
+                <button type="button" onclick="closeMenuModal()" class="text-navy-200 hover:text-white text-2xl leading-none">&times;</button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="formMenuId">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Menu</label>
-                    <input type="text" id="formMenuName" placeholder="Contoh: Roti Bakar" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <input type="text" id="formMenuName" placeholder="Contoh: Roti Bakar" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori</label>
-                    <input type="text" id="formMenuCategory" placeholder="Contoh: Makanan" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <input type="text" id="formMenuCategory" placeholder="Contoh: Makanan" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Harga Modal / HPP (Rp)</label>
-                    <input type="number" id="formMenuHPP" placeholder="Contoh: 10000" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <input type="number" id="formMenuHPP" placeholder="Contoh: 10000" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Harga Jual (Rp)</label>
-                    <input type="number" id="formMenuPrice" placeholder="Contoh: 15000" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <input type="number" id="formMenuPrice" placeholder="Contoh: 15000" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none">
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-2">
-                <button type="button" onclick="closeMenuModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 rounded-xl text-sm transition">Batal</button>
-                <button type="button" onclick="saveMenu()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-sm transition">Simpan</button>
+                <button type="button" onclick="closeMenuModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-ink-900 font-bold py-2 rounded-xl text-sm transition">Batal</button>
+                <button type="button" onclick="saveMenu()" class="w-1/2 bg-copper-500 hover:bg-copper-600 text-white font-bold py-2 rounded-xl text-sm transition">Simpan</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL VERIFIKASI PIN MANAJER -->
-    <div id="managerPinModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] hidden flex justify-center items-center p-4">
+    <div id="managerPinModal" class="fixed inset-0 bg-ink-900/70 backdrop-blur-sm z-[70] hidden flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
             <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
             </div>
             <div>
-                <h3 class="font-bold text-lg text-slate-800">Akses Terbatas</h3>
+                <h3 class="font-bold text-lg text-ink-900">Akses Terbatas</h3>
                 <p class="text-xs text-slate-500 mt-1">Masukkan PIN untuk membuka halaman <span id="targetTabName" class="font-semibold text-slate-700"></span></p>
             </div>
             <div>
-                <input type="password" id="managerPinInput" placeholder="Masukkan PIN" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-3 text-center tracking-[0.5em] font-bold text-lg focus:ring-2 focus:ring-emerald-500 outline-none" onkeypress="if(event.key === 'Enter') verifyManagerPin()">
+                <input type="password" id="managerPinInput" placeholder="Masukkan PIN" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-3 text-center tracking-[0.5em] font-bold text-lg focus:ring-2 focus:ring-navy-500 outline-none" onkeypress="if(event.key === 'Enter') verifyManagerPin()">
                 <p id="managerPinError" class="text-xs text-rose-500 font-medium mt-1.5 hidden">PIN salah!</p>
             </div>
             <div class="flex gap-2 pt-2">
-                <button onclick="closeManagerPinModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 rounded-xl text-xs transition">Batal</button>
-                <button onclick="verifyManagerPin()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md">Konfirmasi</button>
+                <button onclick="closeManagerPinModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-ink-900 font-bold py-2.5 rounded-xl text-xs transition">Batal</button>
+                <button onclick="verifyManagerPin()" class="w-1/2 bg-navy-800 hover:bg-navy-900 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md">Konfirmasi</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL ABOUT / FITUR -->
-    <div id="featureInfoModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex justify-center items-center p-4">
+    <div id="featureInfoModal" class="fixed inset-0 bg-ink-900/80 backdrop-blur-sm z-[110] hidden flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div class="bg-emerald-800 text-white p-5 flex justify-between items-center">
+            <div class="bg-navy-800 text-white p-5 flex justify-between items-center">
                 <h3 class="font-bold text-lg flex items-center gap-2">✨ Informasi Fitur Sistem</h3>
-                <button type="button" onclick="closeFeatureInfo()" class="text-emerald-200 hover:text-white text-2xl leading-none">&times;</button>
+                <button type="button" onclick="closeFeatureInfo()" class="text-navy-200 hover:text-white text-2xl leading-none">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-slate-700">
                 <div>
-                    <h4 class="font-bold text-emerald-700 text-base mb-2 border-b border-emerald-100 pb-1">📌 FITUR UTAMA</h4>
+                    <h4 class="font-bold text-navy-700 text-base mb-2 border-b border-navy-100 pb-1">📌 FITUR UTAMA</h4>
                     <ul class="space-y-2 list-disc list-inside">
                         <li><strong>Kasir Digital (POS):</strong> Pencatatan pesanan terpisah (Makanan & Minuman) yang cepat, input porsi, catatan khusus, hingga kalkulasi uang kembalian otomatis.</li>
                         <li><strong>Cetak Struk Thermal:</strong> Mencetak bukti pembayaran yang rapi, lengkap dengan Nomor Antrean, ID Pesanan, dan Waktu Pemesanan.</li>
@@ -505,7 +516,7 @@
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold text-emerald-700 text-base mb-2 border-b border-emerald-100 pb-1">🚀 FITUR UNGGULAN</h4>
+                    <h4 class="font-bold text-navy-700 text-base mb-2 border-b border-navy-100 pb-1">🚀 FITUR UNGGULAN</h4>
                     <ul class="space-y-2 list-disc list-inside">
                         <li><strong>Kitchen Display System (KDS):</strong> Layar dapur interaktif untuk koki yang menampilkan antrean pesanan, catatan khusus masakan, dan pembaruan status (Dimasak -> Selesai).</li>
                         <li><strong>Kalkulasi Laba Bersih Otomatis:</strong> Sistem langsung memotong omzet dengan Harga Pokok Penjualan (HPP) untuk menghasilkan laporan laba bersih yang akurat.</li>
@@ -517,20 +528,20 @@
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
-                <button onclick="closeFeatureInfo()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl transition shadow-md">Lewati / Tutup</button>
+                <button onclick="closeFeatureInfo()" class="bg-navy-800 hover:bg-navy-900 text-white font-bold py-2.5 px-6 rounded-xl transition shadow-md">Lewati / Tutup</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL POP UP MENCETAK STRUK -->
-    <div id="printingPopup" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] hidden flex justify-center items-center p-4">
-        <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4"><svg class="w-10 h-10 text-emerald-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><h2 class="text-base font-bold text-slate-800">Sedang mencetak struk...</h2></div>
+    <div id="printingPopup" class="fixed inset-0 bg-ink-900/70 backdrop-blur-sm z-[60] hidden flex justify-center items-center p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4"><svg class="w-10 h-10 text-copper-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><h2 class="text-base font-bold text-ink-900">Sedang mencetak struk...</h2></div>
     </div>
 
     <!-- MODAL STRUK -->
-    <div id="thermalReceiptModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden flex justify-center items-center p-4 overflow-y-auto no-print">
+    <div id="thermalReceiptModal" class="fixed inset-0 bg-ink-900/70 backdrop-blur-xs z-50 hidden flex justify-center items-center p-4 overflow-y-auto no-print">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden receipt-paper my-auto">
-            <div id="receiptContent" class="p-5 font-receipt text-slate-800 text-xs leading-relaxed border border-slate-200 bg-white">
+            <div id="receiptContent" class="p-5 font-receipt text-ink-900 text-xs leading-relaxed border border-slate-200 bg-white">
                 <div class="text-center pb-3 border-b border-dashed border-slate-400 space-y-1"><h2 class="text-base font-bold uppercase tracking-wider text-black">RM. KULINER EXPRESS</h2><p class="text-[11px]">Jl. Raya Kuliner Nusantara No. 88</p></div>
                 <div class="py-2 border-b border-dashed border-slate-400 space-y-1 text-[11px]">
                     <div class="flex justify-between"><span class="font-bold">No. Antrean:</span> <span id="recAntrean" class="font-bold text-lg text-black">#0</span></div>
@@ -553,8 +564,8 @@
                 <div class="text-center pt-3 text-[10px] text-slate-600 space-y-1"><p class="font-semibold text-black">*** TERIMA KASIH ***</p><p>Silakan Datang Kembali</p></div>
             </div>
             <div class="bg-slate-100 p-4 border-t border-slate-200 flex gap-2 no-print">
-                <button type="button" onclick="closeReceiptModal()" class="w-1/2 bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold py-2.5 rounded-xl transition text-xs">Tutup</button>
-                <button type="button" onclick="window.print()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center shadow-md">Cetak Struk</button>
+                <button type="button" onclick="closeReceiptModal()" class="w-1/2 bg-slate-300 hover:bg-slate-400 text-ink-900 font-bold py-2.5 rounded-xl transition text-xs">Tutup</button>
+                <button type="button" onclick="window.print()" class="w-1/2 bg-navy-800 hover:bg-navy-900 text-white font-bold py-2.5 rounded-xl transition text-xs flex items-center justify-center shadow-md">Cetak Struk</button>
             </div>
         </div>
     </div>
@@ -582,22 +593,22 @@
         let categoryPieChartInstance = null; 
         
         let currentFilteredLaporan = [];
-        let isUpdating = false; // Tambahkan baris ini
+        let isUpdating = false; 
 
         // Fungsi untuk mencegah XSS
-function escapeHTML(str) {
-    if (typeof str !== 'string') return str;
-    return str.replace(/[&<>'"]/g, function(tag) {
-        const charsToReplace = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            "'": '&#39;',
-            '"': '&quot;'
-        };
-        return charsToReplace[tag] || tag;
-    });
-}
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return str;
+            return str.replace(/[&<>'"]/g, function(tag) {
+                const charsToReplace = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                };
+                return charsToReplace[tag] || tag;
+            });
+        }
 
         // --- FUNGSI LOGIN (Menggunakan API & JWT) ---
         async function checkLogin() {
@@ -614,7 +625,6 @@ function escapeHTML(str) {
                 const result = await response.json();
 
                 if (result.success) {
-                    // BARIS INI SANGAT PENTING: Menyimpan token ke memori browser
                     localStorage.setItem('lajurasa_token', result.token); 
                     
                     errorMsg.classList.add('hidden');
@@ -641,7 +651,7 @@ function escapeHTML(str) {
         // --- FUNGSI LOGOUT (Hapus JWT) ---
         function prosesLogout() {
             closeSidebar();
-            localStorage.removeItem('lajurasa_token'); // Hapus token
+            localStorage.removeItem('lajurasa_token'); 
             
             document.getElementById('mainAppContainer').classList.add('hidden');
             document.getElementById('mainAppContainer').classList.remove('flex');
@@ -659,11 +669,10 @@ function escapeHTML(str) {
             switchTab('kasir');
         }
 
-        // --- FUNGSI API REQUEST (Otomatis sisipkan Authorization Header) ---
+        // --- FUNGSI API REQUEST ---
         async function apiRequest(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
             
-            // MENGAMBIL TOKEN DAN MENYISIPKANNYA SEBAGAI KUNCI AKSES
             const token = localStorage.getItem('lajurasa_token');
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
@@ -677,7 +686,6 @@ function escapeHTML(str) {
             
             const result = await response.json();
             
-            // Tangani jika token ditolak/kedaluwarsa oleh server
             if (response.status === 401 || response.status === 403) {
                 prosesLogout();
                 throw new Error(result.message || "Akses ditolak. Silakan login ulang.");
@@ -690,13 +698,12 @@ function escapeHTML(str) {
             return result;
         }
 
-        // --- FUNGSI VERIFIKASI MANAGER (Menggunakan fetch langsung) ---
+        // --- FUNGSI VERIFIKASI MANAGER ---
         async function verifyManagerPin() {
             const inputPin = document.getElementById('managerPinInput').value;
             const errorEl = document.getElementById('managerPinError');
 
             try {
-                // Menggunakan fetch biasa, tidak lewat apiRequest agar terhindar dari bentrok sesi JWT
                 const response = await fetch(`${BACKEND_BASE_URL}/api/verify-manager`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -719,16 +726,9 @@ function escapeHTML(str) {
             }
         }
 
-        // --- FUNGSI ABOUT / FITUR ---
-        function openFeatureInfo() {
-            document.getElementById('featureInfoModal').classList.remove('hidden');
-        }
+        function openFeatureInfo() { document.getElementById('featureInfoModal').classList.remove('hidden'); }
+        function closeFeatureInfo() { document.getElementById('featureInfoModal').classList.add('hidden'); }
 
-        function closeFeatureInfo() {
-            document.getElementById('featureInfoModal').classList.add('hidden');
-        }
-
-        // --- FUNGSI SIDEBAR MENU ---
         function openSidebar() {
             const sidebar = document.getElementById('rightSidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -749,7 +749,6 @@ function escapeHTML(str) {
             }, 300);
         }
 
-        // --- SISTEM NAVIGASI TAB DENGAN PROTEKSI PIN ---
         function switchTab(tabName) {
             if (tabName === 'laporan' || tabName === 'menu') {
                 pendingTargetTab = tabName;
@@ -774,8 +773,8 @@ function escapeHTML(str) {
             const btnDapur = document.getElementById('tabBtnDapur');
             const btnLainnya = document.getElementById('tabBtnLainnya');
 
-            const defaultClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-emerald-200 hover:text-white hover:bg-emerald-700";
-            const activeClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-emerald-900 shadow-sm";
+            const defaultClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-navy-200 hover:text-white hover:bg-navy-700";
+            const activeClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-navy-900 shadow-sm";
 
             btnKasir.className = defaultClass;
             btnDapur.className = defaultClass;
@@ -799,7 +798,6 @@ function escapeHTML(str) {
             await loadLaporanFromDatabase();
         }
 
-        // --- DATA LOADERS ---
         async function loadMenuFromDatabase() {
             try {
                 const result = await apiRequest('/api/menu');
@@ -835,37 +833,33 @@ function escapeHTML(str) {
         }
 
         async function loadTransactionsFromDatabase() {
-    try {
-        const result = await apiRequest('/api/pesanan');
-        if (result.success && Array.isArray(result.data)) { 
-            // NORMALISASI DATA: Memaksa semua properti menjadi format yang dibaca frontend
-            appState.transactions = result.data.map(trx => ({
-                ...trx,
-                id: trx.id || trx.Idpesanan,
-                status: trx.status || trx.Status || 'Pending',
-                total_harga: trx.total_harga || trx.Total_Harga || 0,
-                no_antrean: trx.no_antrean || trx.No_Antrean || trx.id || trx.Idpesanan,
-                tanggal: trx.tanggal || trx.Tanggal,
-                items: (trx.items || []).map(item => ({
-                    ...item,
-                    nama_menu: item.nama_menu || item.Nama_Menu || 'Menu Terhapus/Anonim',
-                    jumlah: item.jumlah || item.Jumlah || 1,
-                    subtotal: item.subtotal || item.Subtotal || 0,
-                    catatan: item.catatan || item.Catatan || ''
-                }))
-            }));
-            
-            renderHistoryKasir(); 
-            renderKitchenQueue(); 
+            try {
+                const result = await apiRequest('/api/pesanan');
+                if (result.success && Array.isArray(result.data)) { 
+                    appState.transactions = result.data.map(trx => ({
+                        ...trx,
+                        id: trx.id || trx.Idpesanan,
+                        status: trx.status || trx.Status || 'Pending',
+                        total_harga: trx.total_harga || trx.Total_Harga || 0,
+                        no_antrean: trx.no_antrean || trx.No_Antrean || trx.id || trx.Idpesanan,
+                        tanggal: trx.tanggal || trx.Tanggal,
+                        items: (trx.items || []).map(item => ({
+                            ...item,
+                            nama_menu: item.nama_menu || item.Nama_Menu || 'Menu Terhapus/Anonim',
+                            jumlah: item.jumlah || item.Jumlah || 1,
+                            subtotal: item.subtotal || item.Subtotal || 0,
+                            catatan: item.catatan || item.Catatan || ''
+                        }))
+                    }));
+                    
+                    renderHistoryKasir(); 
+                    renderKitchenQueue(); 
+                }
+            } catch (error) { 
+                console.error("Gagal memuat transaksi:", error); 
+            }
         }
-    } catch (error) { 
-        console.error("Gagal memuat transaksi:", error); 
-    }
-}
 
-        
-        // FITUR LAPORAN & VISUALISASI GRAFIK
-        
         async function loadLaporanFromDatabase() {
             try {
                 const resLaporan = await apiRequest('/api/laporan');
@@ -917,13 +911,8 @@ function escapeHTML(str) {
 
             renderLaporanTable(filteredLaporan);
             renderRevenueChart(filteredLaporan);
-            
-            // Hitung Jam Sibuk dari transaksi filter
             renderPeakHourChart(filteredTransactions);
-            
-            // Hitung Kategori Pie Chart
             renderCategoryPieChart(filteredTransactions);
-
             renderTopMenuChart(appState.terlarisData); 
         }
 
@@ -938,7 +927,6 @@ function escapeHTML(str) {
             filteredTrx.forEach(trx => {
                 if (trx.status === "Selesai" && Array.isArray(trx.items)) {
                     trx.items.forEach(item => {
-                        // Cari objek menu asli untuk tahu kategorinya
                         const menuAsli = appState.menus.find(m => m.id == item.Idmenu || m.id == item.menu_id);
                         const kat = menuAsli ? menuAsli.category.toLowerCase() : '';
                         const subtotalItem = Number(item.subtotal || (item.jumlah * menuAsli?.price));
@@ -948,14 +936,12 @@ function escapeHTML(str) {
                         } else if (kat.includes('minum')) {
                             totalPendapatanMinuman += subtotalItem;
                         } else {
-                            // Default masuk makanan jika tidak jelas
                             totalPendapatanMakanan += subtotalItem; 
                         }
                     });
                 }
             });
 
-            // Tampilkan chart hanya jika ada data
             const totalGabungan = totalPendapatanMakanan + totalPendapatanMinuman;
             const dataToRender = totalGabungan > 0 ? [totalPendapatanMakanan, totalPendapatanMinuman] : [0, 0];
 
@@ -965,7 +951,7 @@ function escapeHTML(str) {
                     labels: ['Makanan', 'Minuman'],
                     datasets: [{
                         data: dataToRender,
-                        backgroundColor: ['#53CBF3', '#f59e0b'],
+                        backgroundColor: ['#0B1D3A', '#B87333'], /* Diubah ke warna Navy & Copper */
                         borderWidth: 0,
                         hoverOffset: 4
                     }]
@@ -1033,13 +1019,13 @@ function escapeHTML(str) {
                 tableBody.innerHTML += `<tr class="hover:bg-slate-50 transition">
                     <td class="py-3 px-4 font-medium text-slate-700">${tgl}</td>
                     <td class="py-3 px-4 text-right font-bold text-slate-700">${formatRupiah(kotor)}</td>
-                    <td class="py-3 px-4 text-right font-bold text-emerald-700">${formatRupiah(bersih)}</td>
+                    <td class="py-3 px-4 text-right font-bold text-copper-600">${formatRupiah(bersih)}</td>
                 </tr>`;
             });
             tableBody.innerHTML += `<tr class="bg-slate-100 border-t-2 border-slate-300">
-                <td class="py-3 px-4 font-extrabold text-slate-900 text-right uppercase text-xs">Total Akumulasi:</td>
-                <td class="py-3 px-4 text-right font-extrabold text-slate-900 text-sm">${formatRupiah(totalAkumulasiKotor)}</td>
-                <td class="py-3 px-4 text-right font-extrabold text-emerald-800 text-base">${formatRupiah(totalAkumulasiBersih)}</td>
+                <td class="py-3 px-4 font-extrabold text-ink-900 text-right uppercase text-xs">Total Akumulasi:</td>
+                <td class="py-3 px-4 text-right font-extrabold text-ink-900 text-sm">${formatRupiah(totalAkumulasiKotor)}</td>
+                <td class="py-3 px-4 text-right font-extrabold text-navy-800 text-base">${formatRupiah(totalAkumulasiBersih)}</td>
             </tr>`;
         }
 
@@ -1065,7 +1051,7 @@ function escapeHTML(str) {
                         {
                             label: 'Laba Kotor (Omzet)',
                             data: dataKotor,
-                            borderColor: '#94a3b8', 
+                            borderColor: '#698fb1', /* Diubah ke warna Navy Terang */
                             backgroundColor: 'transparent',
                             borderWidth: 2,
                             borderDash: [5, 5], 
@@ -1074,8 +1060,8 @@ function escapeHTML(str) {
                         {
                             label: 'Laba Bersih',
                             data: dataBersih,
-                            borderColor: '#53CBF3', 
-                            backgroundColor: 'rgba(83, 203, 243, 0.15)',
+                            borderColor: '#B87333', /* Diubah ke warna Copper */
+                            backgroundColor: 'rgba(184, 115, 51, 0.15)',
                             borderWidth: 2,
                             fill: true,
                             tension: 0.3
@@ -1091,7 +1077,6 @@ function escapeHTML(str) {
             if(!ctx) return;
             if(peakHourChartInstance) peakHourChartInstance.destroy();
 
-            // Hitung frekuensi order per jam secara lokal berdasarkan filter tanggal
             const jamCounts = {};
             
             filteredTransactions.forEach(trx => {
@@ -1102,7 +1087,6 @@ function escapeHTML(str) {
                 }
             });
 
-            // Urutkan jam
             const sortedJams = Object.keys(jamCounts).sort((a, b) => Number(a) - Number(b));
             
             const labels = sortedJams.map(jam => `${String(jam).padStart(2, '0')}:00`);
@@ -1115,7 +1099,7 @@ function escapeHTML(str) {
                     datasets: [{
                         label: 'Total Kunjungan (Pesanan)',
                         data: dataSeries,
-                        backgroundColor: '#53CBF3',
+                        backgroundColor: '#0B1D3A', /* Diubah ke warna Navy Utama */
                         borderRadius: 4
                     }]
                 },
@@ -1125,7 +1109,7 @@ function escapeHTML(str) {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { precision: 0 } // Angka bulat
+                            ticks: { precision: 0 } 
                         }
                     }
                 }
@@ -1147,7 +1131,7 @@ function escapeHTML(str) {
                     datasets: [{
                         label: 'Porsi Terjual',
                         data: dataSeries,
-                        backgroundColor: '#0ea5e9', 
+                        backgroundColor: '#B87333', /* Diubah ke warna Copper */
                         borderRadius: 4
                     }]
                 },
@@ -1161,7 +1145,6 @@ function escapeHTML(str) {
                 }
             });
         }
-        // FUNGSI CRUD MENU KELOLA
         
         function renderMenuTable() {
             const tbody = document.getElementById('menuTableBody');
@@ -1172,7 +1155,6 @@ function escapeHTML(str) {
                 return;
             }
             
-            // [PERUBAHAN]: Meng-copy array menu dan mengurutkannya A-Z sebelum di-render ke tabel
             const sortedMenus = [...appState.menus].sort((a, b) => a.name.localeCompare(b.name));
             
             sortedMenus.forEach(m => {
@@ -1180,10 +1162,10 @@ function escapeHTML(str) {
             const safeCategory = escapeHTML(m.category);
             tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="py-3 px-4 font-semibold text-slate-800">${m.name}</td>
+                        <td class="py-3 px-4 font-semibold text-ink-900">${m.name}</td>
                         <td class="py-3 px-4 text-slate-600 text-xs">${m.category}</td>
                         <td class="py-3 px-4 text-right font-medium text-slate-500">${formatRupiah(m.hpp)}</td>
-                        <td class="py-3 px-4 text-right font-bold text-emerald-700">${formatRupiah(m.price)}</td>
+                        <td class="py-3 px-4 text-right font-bold text-copper-600">${formatRupiah(m.price)}</td>
                         <td class="py-3 px-4 text-center space-x-1">
                             <button onclick="openMenuModal(${m.id})" class="text-blue-600 hover:text-blue-800 font-bold text-[11px] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 transition">Edit</button>
                             <button onclick="deleteMenu(${m.id})" class="text-rose-600 hover:text-rose-800 font-bold text-[11px] bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg border border-rose-200 transition">Hapus</button>
@@ -1248,18 +1230,13 @@ function escapeHTML(str) {
             } catch (err) { showAlert(err.message, 'error'); }
         }
 
-        
-        // FUNGSI LAINNYA 
-        
         function populateMenuDropdown() {
             const selectMakanan = document.getElementById('itemMenuSelectMakanan');
             const selectMinuman = document.getElementById('itemMenuSelectMinuman');
             if (!selectMakanan || !selectMinuman) return;
             
-            // Filter kategori sederhana berdasarkan kata kunci (Case Insensitive)
             const makananOptions = appState.menus.filter(m => m.category.toLowerCase().includes('makan'));
             const minumanOptions = appState.menus.filter(m => m.category.toLowerCase().includes('minum'));
-            // Kategori selain makanan/minuman masuk ke list makanan sebagai fallback
             const lainnyaOptions = appState.menus.filter(m => !m.category.toLowerCase().includes('makan') && !m.category.toLowerCase().includes('minum'));
 
             selectMakanan.innerHTML = '<option value="">Pilih Makanan...</option>' + 
@@ -1316,13 +1293,12 @@ function escapeHTML(str) {
             
             appState.cart.forEach(item => {
             totalMenuOnly += item.subtotal;
-            const safeName = escapeHTML(item.name); // Sanitasi nama
-            const safeNotes = escapeHTML(item.notes); // Sanitasi catatan
+            const safeName = escapeHTML(item.name);
+            const safeNotes = escapeHTML(item.notes); 
 
-            cartBody.innerHTML += `<tr><td class="py-2 px-3 font-semibold text-slate-800">${safeName} ${safeNotes ? `<div class="text-[10px] text-slate-400 italic">${safeNotes}</div>` : ''}</td><td class="py-2 px-2 text-center font-bold text-slate-700">${item.qty}</td><td class="py-2 px-3 text-right font-bold text-emerald-700">${formatRupiah(item.subtotal)}</td><td class="py-2 px-2 text-center"><button onclick="removeCartItem(${item.cartId})" class="text-rose-500 font-bold p-1">✕</button></td></tr>`;
+            cartBody.innerHTML += `<tr><td class="py-2 px-3 font-semibold text-ink-900">${safeName} ${safeNotes ? `<div class="text-[10px] text-slate-400 italic">${safeNotes}</div>` : ''}</td><td class="py-2 px-2 text-center font-bold text-slate-700">${item.qty}</td><td class="py-2 px-3 text-right font-bold text-copper-600">${formatRupiah(item.subtotal)}</td><td class="py-2 px-2 text-center"><button onclick="removeCartItem(${item.cartId})" class="text-rose-500 font-bold p-1">✕</button></td></tr>`;
             });
             
-            // KALKULASI PAJAK (PENGECUALIAN UNTUK TAKEAWAY)
             const tableSelect = document.getElementById('tableSelect').value;
             let taxAmount = 0;
             const taxInfoElement = document.getElementById('taxNoteInfo');
@@ -1331,7 +1307,7 @@ function escapeHTML(str) {
                 taxAmount = totalMenuOnly * TAX_RATE;
                 if(taxInfoElement) taxInfoElement.textContent = '* Total tagihan di bawah ini sudah termasuk PPN 10%';
             } else {
-                taxAmount = 0; // Bebas PPN jika Takeaway
+                taxAmount = 0; 
                 if(taxInfoElement) taxInfoElement.textContent = '* Bebas PPN 10% (Pesanan Takeaway)';
             }
             
@@ -1340,7 +1316,6 @@ function escapeHTML(str) {
             document.getElementById('cartGrandTotal').textContent = formatRupiah(grandTotalWithTax); 
             document.getElementById('cartCountBadge').textContent = `${appState.cart.length} Jenis`; 
             
-            // Simpan Ke State
             appState.currentPaymentState.totalMenus = totalMenuOnly; 
             appState.currentPaymentState.taxAmount = taxAmount;
             appState.currentPaymentState.grandTotal = grandTotalWithTax;
@@ -1348,7 +1323,7 @@ function escapeHTML(str) {
 
         function showAlert(message, type = 'success') {
             const alertBox = document.getElementById('alertBox');
-            alertBox.className = `fixed top-16 left-1/2 transform -translate-x-1/2 z-[60] p-4 rounded-xl text-sm font-semibold border shadow-lg transition-all duration-300 w-11/12 max-w-md text-center ${ type === 'success' ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800' }`;
+            alertBox.className = `fixed top-16 left-1/2 transform -translate-x-1/2 z-[60] p-4 rounded-xl text-sm font-semibold border shadow-lg transition-all duration-300 w-11/12 max-w-md text-center ${ type === 'success' ? 'bg-navy-50 border-navy-300 text-navy-800' : 'bg-rose-50 border-rose-300 text-rose-800' }`;
             alertBox.textContent = message; alertBox.classList.remove('hidden'); setTimeout(() => alertBox.classList.add('hidden'), 3500);
         }
 
@@ -1371,7 +1346,7 @@ function escapeHTML(str) {
             const total = appState.currentPaymentState.grandTotal; const tendered = parseFloat(document.getElementById('payTendered').value) || 0; const change = tendered - total;
             appState.currentPaymentState.tendered = tendered; appState.currentPaymentState.change = change > 0 ? change : 0;
             const changeEl = document.getElementById('payChange');
-            if (change < 0) { changeEl.textContent = 'Uang Kurang!'; changeEl.className = "text-xl font-extrabold text-rose-600"; } else { changeEl.textContent = formatRupiah(appState.currentPaymentState.change); changeEl.className = "text-xl font-extrabold text-emerald-700"; }
+            if (change < 0) { changeEl.textContent = 'Uang Kurang!'; changeEl.className = "text-xl font-extrabold text-rose-600"; } else { changeEl.textContent = formatRupiah(appState.currentPaymentState.change); changeEl.className = "text-xl font-extrabold text-copper-600"; }
         }
 
         async function confirmPayment() {
@@ -1391,15 +1366,12 @@ function escapeHTML(str) {
             closePaymentModal();
             const printingPopup = document.getElementById('printingPopup'); 
             printingPopup.classList.remove('hidden');
-            
-            // [DIHAPUS]: Perintah delay 3 detik (await new Promise...) sudah dihapus agar instan
 
             try {
-                // Langsung tembak ke database tanpa menunggu
                 const result = await apiRequest('/api/pesanan', { method: 'POST', body: JSON.stringify(payload) });
                 if (!result.success) throw new Error("Gagal menyimpan ke database");
                 
-                printingPopup.classList.add('hidden'); // Matikan popup loading instan
+                printingPopup.classList.add('hidden'); 
                 
                 const changeAmmount = method === 'Tunai' ? (tendered - grandTotal) : 0;
                 
@@ -1419,7 +1391,6 @@ function escapeHTML(str) {
                 
                 appState.cart = []; renderCart(); 
                 
-                // Refresh data di background tanpa 'await' agar UI tidak terblokir
                 loadTransactionsFromDatabase(); 
             } catch (error) { 
                 printingPopup.classList.add('hidden'); 
@@ -1428,7 +1399,6 @@ function escapeHTML(str) {
             }
         }
 
-        // --- FILTER RIWAYAT KASIR HARI INI  ---
         function renderHistoryKasir() {
             const container = document.getElementById('transactionHistoryContainer'); container.innerHTML = '';
             
@@ -1449,20 +1419,18 @@ function escapeHTML(str) {
             }
             
             todaysTransactions.forEach(trx => {
-                // Konversi format waktu
                 const tDateTrx = new Date(trx.Tanggal || trx.tanggal);
                 const timeStrTrx = tDateTrx.toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit' });
 
-                let badgeColor = 'bg-slate-200 text-slate-700'; if(trx.status === 'Pending') badgeColor = 'bg-amber-100 text-amber-700 border border-amber-300'; if(trx.status === 'Diproses') badgeColor = 'bg-blue-100 text-blue-700 border border-blue-300'; if(trx.status === 'Selesai') badgeColor = 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+                let badgeColor = 'bg-slate-200 text-slate-700'; if(trx.status === 'Pending') badgeColor = 'bg-amber-100 text-amber-700 border border-amber-300'; if(trx.status === 'Diproses') badgeColor = 'bg-blue-100 text-blue-700 border border-blue-300'; if(trx.status === 'Selesai') badgeColor = 'bg-navy-100 text-navy-800 border border-navy-300';
                 
-                // Menampilkan catatan dari DB jika tersedia
                 const itemsList = Array.isArray(trx.items) ? trx.items.map(i => {
                 const note = escapeHTML(i.catatan || i.Catatan || i.notes || '');
                 const name = escapeHTML(i.nama_menu || '');
                 return `${name} (x${i.jumlah})${note ? ` [${note}]` : ''}`;
                 }).join(', ') : '-';
 
-                container.innerHTML += `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 shadow-xs"><div class="flex justify-between items-start mb-2"><div><span class="font-extrabold text-slate-800 text-sm bg-slate-200 px-2 py-0.5 rounded-md mr-1">#${trx.no_antrean || trx.id}</span> <span class="font-bold text-slate-500 text-[10px]">ID:${trx.id}</span> <span class="text-[10px] text-slate-500 ml-1 font-medium">🕒 ${timeStrTrx}</span></div><span class="font-extrabold text-emerald-700 text-sm">${formatRupiah(trx.total_harga)}</span></div><div class="flex justify-between items-end"><div class="text-[11px] text-slate-600 line-clamp-2 w-3/4"><strong>Pesanan:</strong> ${itemsList}</div><span class="text-[9px] font-bold px-2 py-1 rounded-md ${badgeColor}">${trx.status}</span></div></div>`;
+                container.innerHTML += `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 shadow-xs"><div class="flex justify-between items-start mb-2"><div><span class="font-extrabold text-ink-900 text-sm bg-slate-200 px-2 py-0.5 rounded-md mr-1">#${trx.no_antrean || trx.id}</span> <span class="font-bold text-slate-500 text-[10px]">ID:${trx.id}</span> <span class="text-[10px] text-slate-500 ml-1 font-medium">🕒 ${timeStrTrx}</span></div><span class="font-extrabold text-copper-600 text-sm">${formatRupiah(trx.total_harga)}</span></div><div class="flex justify-between items-end"><div class="text-[11px] text-slate-600 line-clamp-2 w-3/4"><strong>Pesanan:</strong> ${itemsList}</div><span class="text-[9px] font-bold px-2 py-1 rounded-md ${badgeColor}">${trx.status}</span></div></div>`;
             });
             document.getElementById('historyCountBadge').textContent = `${todaysTransactions.length} Pesanan`;
         }
@@ -1475,14 +1443,12 @@ function escapeHTML(str) {
             if (activeOrders.length === 0) { grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 text-sm italic">Antrean dapur kosong.</div>`; return; }
 
             activeOrders.forEach(trx => {
-                // Konversi format waktu
                 const tDateTrx = new Date(trx.Tanggal || trx.tanggal);
                 const timeStrTrx = tDateTrx.toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit' });
 
                 const isPending = trx.status === 'Pending';
-                let cardHtml = `<div class="bg-white border-2 ${isPending ? 'border-amber-300 shadow-amber-100' : 'border-blue-400 shadow-blue-100'} rounded-xl overflow-hidden shadow-md flex flex-col h-full"><div class="${isPending ? 'bg-amber-100/50' : 'bg-blue-50'} p-3 border-b border-slate-100 flex justify-between items-center"><div><div class="text-sm font-extrabold text-slate-800">Antrean #${trx.no_antrean || trx.id}</div><div class="text-[9px] font-bold text-slate-500 mt-0.5">ID: ${trx.id} <span class="ml-1.5 font-normal text-slate-600">🕒 ${timeStrTrx}</span></div></div><span class="text-[10px] font-extrabold px-2.5 py-1 rounded-md ${isPending ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white'}">${trx.status}</span></div><div class="p-4 flex-1 bg-slate-50"><ul class="space-y-2 text-sm text-slate-800 font-medium">`;
+                let cardHtml = `<div class="bg-white border-2 ${isPending ? 'border-amber-300 shadow-amber-100' : 'border-blue-400 shadow-blue-100'} rounded-xl overflow-hidden shadow-md flex flex-col h-full"><div class="${isPending ? 'bg-amber-100/50' : 'bg-blue-50'} p-3 border-b border-slate-100 flex justify-between items-center"><div><div class="text-sm font-extrabold text-ink-900">Antrean #${trx.no_antrean || trx.id}</div><div class="text-[9px] font-bold text-slate-500 mt-0.5">ID: ${trx.id} <span class="ml-1.5 font-normal text-slate-600">🕒 ${timeStrTrx}</span></div></div><span class="text-[10px] font-extrabold px-2.5 py-1 rounded-md ${isPending ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white'}">${trx.status}</span></div><div class="p-4 flex-1 bg-slate-50"><ul class="space-y-2 text-sm text-ink-900 font-medium">`;
                 
-                // Menampilkan catatan dari DB untuk koki
                 if (Array.isArray(trx.items)) { 
                 trx.items.forEach(item => { 
                 const note = escapeHTML(item.catatan || item.Catatan || item.notes || '');
@@ -1493,22 +1459,20 @@ function escapeHTML(str) {
 
                 cardHtml += `</ul></div><div class="p-3 bg-white border-t border-slate-100">`;
                 if (isPending) { cardHtml += `<button onclick="updateStatusPesanan(${trx.id}, 'Diproses')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs transition">👨‍🍳 Mulai Memasak</button>`; } 
-                else if (trx.status === 'Diproses') { cardHtml += `<button onclick="updateStatusPesanan(${trx.id}, 'Selesai')" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-sm">✅ Masakan Selesai</button>`; }
+                else if (trx.status === 'Diproses') { cardHtml += `<button onclick="updateStatusPesanan(${trx.id}, 'Selesai')" class="w-full bg-copper-500 hover:bg-copper-600 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-sm">✅ Masakan Selesai</button>`; }
                 cardHtml += `</div></div>`; grid.innerHTML += cardHtml;
             });
         }
 
         async function updateStatusPesanan(pesananId, newStatus) {
-            isUpdating = true; // Kunci sistem agar tidak refresh otomatis saat proses ini berjalan
+            isUpdating = true; 
 
             try {
-                // Kirim perintah ke server dan TUNGGU prosesnya sampai selesai
                 const result = await apiRequest(`/api/pesanan/${pesananId}/status`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
                 
                 if (result.success) {
                     showAlert(`Pesanan #${pesananId} diperbarui menjadi ${newStatus}.`); 
                     
-                    // Setelah server BERHASIL menyimpan, baru tarik data terbaru untuk merubah layar dapur
                     await loadTransactionsFromDatabase(); 
                     
                     if (newStatus === 'Selesai') { 
@@ -1520,11 +1484,11 @@ function escapeHTML(str) {
             } catch (error) { 
                 showAlert(`Gagal mengubah status: ${error.message}`, 'error'); 
             } finally {
-                isUpdating = false; // Buka kembali kunci refresh otomatis
+                isUpdating = false; 
             }
         }
         function formatRupiah(num) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0); }
-        function updateDbStatus(isConnected, txt) { const dot = document.getElementById('dbStatusDot'); if(dot) dot.className = `w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400' : (isConnected===false?'bg-rose-500':'bg-amber-400 animate-pulse')}`; const textEl = document.getElementById('dbStatusText'); if(textEl) textEl.textContent = txt; }
+        function updateDbStatus(isConnected, txt) { const dot = document.getElementById('dbStatusDot'); if(dot) dot.className = `w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-copper-500' : (isConnected===false?'bg-rose-500':'bg-amber-400 animate-pulse')}`; const textEl = document.getElementById('dbStatusText'); if(textEl) textEl.textContent = txt; }
         
         function openReceiptModal(trx) {
             const tDate = trx.tanggal ? new Date(trx.tanggal) : new Date();
@@ -1542,7 +1506,6 @@ function escapeHTML(str) {
             document.getElementById('recTendered').textContent = formatRupiah(trx.tendered); 
             document.getElementById('recChange').textContent = formatRupiah(trx.change);
             
-            // Render menu item lengkap dengan catatan pada struk
             document.getElementById('recItemsBody').innerHTML = trx.items.map(i => {
             const note = escapeHTML(i.notes || i.catatan || i.Catatan || '');
             const name = escapeHTML(i.name || '');
@@ -1554,20 +1517,17 @@ function escapeHTML(str) {
 
         function closeReceiptModal() { document.getElementById('thermalReceiptModal').classList.add('hidden'); }
 
-        // Inisialisasi koneksi WebSocket
-const socket = io(BACKEND_BASE_URL || window.location.origin);
+        const socket = io(BACKEND_BASE_URL || window.location.origin);
 
-// Dengarkan event pembaruan dari server
-socket.on('pesanan_update', async () => {
-    if (!isUpdating && !document.getElementById('mainAppContainer').classList.contains('hidden')) {
-        await loadTransactionsFromDatabase();
-        
-        // Refresh laporan secara instan jika tab laporan sedang terbuka
-        if (document.getElementById('viewLaporan').classList.contains('active')) {
-            await loadLaporanFromDatabase();
-        }
-    }
-});
+        socket.on('pesanan_update', async () => {
+            if (!isUpdating && !document.getElementById('mainAppContainer').classList.contains('hidden')) {
+                await loadTransactionsFromDatabase();
+                
+                if (document.getElementById('viewLaporan').classList.contains('active')) {
+                    await loadLaporanFromDatabase();
+                }
+            }
+        });
         
     </script>
 </body>
