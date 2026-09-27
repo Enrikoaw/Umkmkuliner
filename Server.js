@@ -228,18 +228,63 @@ app.post('/api/pesanan', authenticateToken, async (req, res) => {
 // 3. GET /api/pesanan 
 app.get('/api/pesanan', authenticateToken, async (req, res) => {
     try {
-        const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga, No_Antrean as no_antrean FROM pesanan ORDER BY Idpesanan DESC');
-        for (let p of pList) {
-            const [dList] = await pool.query(`
-                SELECT dp.*, m.Nama_Menu as nama_menu, dp.Jumlah as jumlah, dp.Catatan as catatan
-                FROM detail_pesanan dp 
-                JOIN menu m ON dp.Idmenu = m.Idmenu 
-                WHERE dp.Idpesanan = ?
-            `, [p.Idpesanan]);
-            p.items = dList;
-        }
-        res.json({ success: true, data: pList });
+        const [rows] = await pool.query(`
+            SELECT 
+                p.Idpesanan, p.Status, p.Total_Harga, p.No_Antrean, p.Tanggal,
+                dp.Iddetail, dp.Idmenu, dp.Jumlah, dp.Subtotal, dp.Catatan,
+                m.Nama_Menu
+            FROM pesanan p
+            LEFT JOIN detail_pesanan dp ON p.Idpesanan = dp.Idpesanan
+            LEFT JOIN menu m ON dp.Idmenu = m.Idmenu
+            ORDER BY p.Idpesanan DESC
+        `);
+
+        // Menyusun ulang data dengan mempertahankan kombinasi huruf besar & kecil
+        const groupedMap = rows.reduce((acc, row) => {
+            const id = row.Idpesanan;
+            
+            if (!acc[id]) {
+                acc[id] = {
+                    // Menyertakan format huruf besar (wajib untuk kompabilitas fungsi lama)
+                    Idpesanan: row.Idpesanan,
+                    Status: row.Status,
+                    Total_Harga: row.Total_Harga,
+                    No_Antrean: row.No_Antrean,
+                    Tanggal: row.Tanggal,
+                    
+                    // Menyertakan format huruf kecil (untuk UI Kasir & Dapur)
+                    id: row.Idpesanan,
+                    status: row.Status,
+                    total_harga: row.Total_Harga,
+                    no_antrean: row.No_Antrean,
+                    tanggal: row.Tanggal,
+                    items: []
+                };
+            }
+
+            if (row.Idmenu) {
+                acc[id].items.push({
+                    Iddetail: row.Iddetail,
+                    Idmenu: row.Idmenu,
+                    Jumlah: row.Jumlah,
+                    Subtotal: row.Subtotal,
+                    Catatan: row.Catatan,
+                    
+                    nama_menu: row.Nama_Menu,
+                    jumlah: row.Jumlah,
+                    subtotal: row.Subtotal,
+                    catatan: row.Catatan
+                });
+            }
+            
+            return acc;
+        }, {});
+
+        const groupedData = Object.values(groupedMap).sort((a, b) => b.Idpesanan - a.Idpesanan);
+
+        res.json({ success: true, data: groupedData });
     } catch (error) {
+        console.error("GET /api/pesanan Error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
