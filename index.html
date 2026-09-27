@@ -835,11 +835,33 @@ function escapeHTML(str) {
         }
 
         async function loadTransactionsFromDatabase() {
-            try {
-                const result = await apiRequest('/api/pesanan');
-                if (result.success && Array.isArray(result.data)) { appState.transactions = result.data; renderHistoryKasir(); renderKitchenQueue(); }
-            } catch (error) { console.error("Gagal memuat transaksi:", error); }
+    try {
+        const result = await apiRequest('/api/pesanan');
+        if (result.success && Array.isArray(result.data)) { 
+            // NORMALISASI DATA: Memaksa semua properti menjadi format yang dibaca frontend
+            appState.transactions = result.data.map(trx => ({
+                ...trx,
+                id: trx.id || trx.Idpesanan,
+                status: trx.status || trx.Status || 'Pending',
+                total_harga: trx.total_harga || trx.Total_Harga || 0,
+                no_antrean: trx.no_antrean || trx.No_Antrean || trx.id || trx.Idpesanan,
+                tanggal: trx.tanggal || trx.Tanggal,
+                items: (trx.items || []).map(item => ({
+                    ...item,
+                    nama_menu: item.nama_menu || item.Nama_Menu || 'Menu Terhapus/Anonim',
+                    jumlah: item.jumlah || item.Jumlah || 1,
+                    subtotal: item.subtotal || item.Subtotal || 0,
+                    catatan: item.catatan || item.Catatan || ''
+                }))
+            }));
+            
+            renderHistoryKasir(); 
+            renderKitchenQueue(); 
         }
+    } catch (error) { 
+        console.error("Gagal memuat transaksi:", error); 
+    }
+}
 
         
         // FITUR LAPORAN & VISUALISASI GRAFIK
