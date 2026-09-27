@@ -239,16 +239,15 @@ app.get('/api/pesanan', authenticateToken, async (req, res) => {
             ORDER BY p.Idpesanan DESC
         `);
 
-        // Menggabungkan data (grouping) di sisi JavaScript
-        const groupedData = rows.reduce((acc, row) => {
-            // Mengambil elemen terakhir, karena hasil query sudah ORDER BY p.Idpesanan DESC
-            let lastPesanan = acc[acc.length - 1];
+        // Menggunakan objek untuk mapping data yang lebih akurat
+        const groupedMap = rows.reduce((acc, row) => {
+            const id = row.Idpesanan;
             
-            // Jika pesanan belum ada di array (berdasarkan Idpesanan), buat objek baru
-            if (!lastPesanan || lastPesanan.id !== row.Idpesanan) {
-                lastPesanan = {
-                    id: row.Idpesanan,
-                    Idpesanan: row.Idpesanan,
+            // Jika pesanan belum ada di map, buat objek baru
+            if (!acc[id]) {
+                acc[id] = {
+                    id: id,
+                    Idpesanan: id,
                     status: row.Status,
                     Status: row.Status,
                     total_harga: row.Total_Harga,
@@ -259,12 +258,11 @@ app.get('/api/pesanan', authenticateToken, async (req, res) => {
                     Tanggal: row.Tanggal,
                     items: []
                 };
-                acc.push(lastPesanan);
             }
 
             // Jika baris memiliki relasi detail pesanan, dorong ke dalam array items
             if (row.Idmenu) {
-                lastPesanan.items.push({
+                acc[id].items.push({
                     Iddetail: row.Iddetail,
                     Idmenu: row.Idmenu,
                     nama_menu: row.Nama_Menu,
@@ -275,7 +273,10 @@ app.get('/api/pesanan', authenticateToken, async (req, res) => {
             }
             
             return acc;
-        }, []);
+        }, {});
+
+        // Mengubah objek map kembali menjadi array dan menjaga urutan DESC
+        const groupedData = Object.values(groupedMap).sort((a, b) => b.id - a.id);
 
         res.json({ success: true, data: groupedData });
     } catch (error) {
