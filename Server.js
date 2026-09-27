@@ -82,7 +82,7 @@ const dbConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,//4000,
+    port: process.env.DB_PORT || 3306,
     ssl: { rejectUnauthorized: true }, 
     waitForConnections: true,
     connectionLimit: 10,
@@ -228,22 +228,60 @@ app.post('/api/pesanan', authenticateToken, async (req, res) => {
 // 3. GET /api/pesanan 
 app.get('/api/pesanan', authenticateToken, async (req, res) => {
     try {
-        const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga, No_Antrean as no_antrean FROM pesanan ORDER BY Idpesanan DESC');
-        for (let p of pList) {
-            const [dList] = await pool.query(`
-                SELECT dp.*, m.Nama_Menu as nama_menu, dp.Jumlah as jumlah, dp.Catatan as catatan
-                FROM detail_pesanan dp 
-                JOIN menu m ON dp.Idmenu = m.Idmenu 
-                WHERE dp.Idpesanan = ?
-            `, [p.Idpesanan]);
-            p.items = dList;
-        }
-        res.json({ success: true, data: pList });
+        const [rows] = await pool.query(`
+            SELECT 
+                p.Idpesanan, p.Status, p.Total_Harga, p.No_Antrean, p.Tanggal,
+                dp.Iddetail, dp.Idmenu, dp.Jumlah, dp.Subtotal, dp.Catatan,
+                m.Nama_Menu
+            FROM pesanan p
+            LEFT JOIN detail_pesanan dp ON p.Idpesanan = dp.Idpesanan
+            LEFT JOIN menu m ON dp.Idmenu = m.Idmenu
+            ORDER BY p.Idpesanan DESC
+        `);
+
+        // Menggabungkan data (grouping) di sisi JavaScript
+        const groupedData = rows.reduce((acc, row) => {
+            // Mengambil elemen terakhir, karena hasil query sudah ORDER BY p.Idpesanan DESC
+            let lastPesanan = acc[acc.length - 1];
+            
+            // Jika pesanan belum ada di array (berdasarkan Idpesanan), buat objek baru
+            if (!lastPesanan || lastPesanan.id !== row.Idpesanan) {
+                lastPesanan = {
+                    id: row.Idpesanan,
+                    Idpesanan: row.Idpesanan,
+                    status: row.Status,
+                    Status: row.Status,
+                    total_harga: row.Total_Harga,
+                    Total_Harga: row.Total_Harga,
+                    no_antrean: row.No_Antrean,
+                    No_Antrean: row.No_Antrean,
+                    tanggal: row.Tanggal,
+                    Tanggal: row.Tanggal,
+                    items: []
+                };
+                acc.push(lastPesanan);
+            }
+
+            // Jika baris memiliki relasi detail pesanan, dorong ke dalam array items
+            if (row.Idmenu) {
+                lastPesanan.items.push({
+                    Iddetail: row.Iddetail,
+                    Idmenu: row.Idmenu,
+                    nama_menu: row.Nama_Menu,
+                    jumlah: row.Jumlah,
+                    subtotal: row.Subtotal,
+                    catatan: row.Catatan
+                });
+            }
+            
+            return acc;
+        }, []);
+
+        res.json({ success: true, data: groupedData });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
-
 // 4. PUT /api/pesanan/:id/status
 app.put('/api/pesanan/:id/status', authenticateToken, async (req, res) => {
     const { id } = req.params;
@@ -276,7 +314,7 @@ app.put('/api/pesanan/:id/status', authenticateToken, async (req, res) => {
         connection.release();
 
         io.emit('pesanan_update');
-        
+
         res.json({ success: true, message: `Status diubah menjadi ${status}.` });
     } catch (error) {
         await connection.rollback();
