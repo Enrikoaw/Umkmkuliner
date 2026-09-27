@@ -226,64 +226,19 @@ app.post('/api/pesanan', authenticateToken, async (req, res) => {
 });
 
 // 3. GET /api/pesanan 
-// 3. GET /api/pesanan 
 app.get('/api/pesanan', authenticateToken, async (req, res) => {
     try {
-        // PERBAIKAN: Gunakan ALIAS (AS) agar kunci objek selalu konsisten (huruf kecil)
-        const [rows] = await pool.query(`
-            SELECT 
-                p.Idpesanan AS id, 
-                p.Status AS status, 
-                p.Total_Harga AS total_harga, 
-                p.No_Antrean AS no_antrean, 
-                p.Tanggal AS tanggal,
-                dp.Iddetail AS iddetail, 
-                dp.Idmenu AS idmenu, 
-                dp.Jumlah AS jumlah, 
-                dp.Subtotal AS subtotal, 
-                dp.Catatan AS catatan,
-                m.Nama_Menu AS nama_menu
-            FROM pesanan p
-            LEFT JOIN detail_pesanan dp ON p.Idpesanan = dp.Idpesanan
-            LEFT JOIN menu m ON dp.Idmenu = m.Idmenu
-            ORDER BY p.Idpesanan DESC
-        `);
-
-        // Grouping data menggunakan ID yang sudah distandardisasi
-        const groupedMap = rows.reduce((acc, row) => {
-            const id = row.id;
-            
-            // Jika pesanan belum ada di map, buat objek baru
-            if (!acc[id]) {
-                acc[id] = {
-                    id: id,
-                    status: row.status,
-                    total_harga: row.total_harga,
-                    no_antrean: row.no_antrean,
-                    tanggal: row.tanggal,
-                    items: []
-                };
-            }
-
-            // Jika ada menu terkait (idmenu tidak null), masukkan ke items
-            if (row.idmenu) {
-                acc[id].items.push({
-                    iddetail: row.iddetail,
-                    idmenu: row.idmenu,
-                    nama_menu: row.nama_menu,
-                    jumlah: row.jumlah,
-                    subtotal: row.subtotal,
-                    catatan: row.catatan
-                });
-            }
-            
-            return acc;
-        }, {});
-
-        // Mengubah objek kembali ke array dan mengurutkan dari yang terbaru
-        const groupedData = Object.values(groupedMap).sort((a, b) => b.id - a.id);
-
-        res.json({ success: true, data: groupedData });
+        const [pList] = await pool.query('SELECT *, Idpesanan as id, Status as status, Total_Harga as total_harga, No_Antrean as no_antrean FROM pesanan ORDER BY Idpesanan DESC');
+        for (let p of pList) {
+            const [dList] = await pool.query(`
+                SELECT dp.*, m.Nama_Menu as nama_menu, dp.Jumlah as jumlah, dp.Catatan as catatan
+                FROM detail_pesanan dp 
+                JOIN menu m ON dp.Idmenu = m.Idmenu 
+                WHERE dp.Idpesanan = ?
+            `, [p.Idpesanan]);
+            p.items = dList;
+        }
+        res.json({ success: true, data: pList });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
