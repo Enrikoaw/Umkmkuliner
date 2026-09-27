@@ -173,6 +173,16 @@
                     </div>
                 </button>
 
+                <button onclick="switchTab('pengaturan'); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-navy-50 text-slate-700 hover:text-navy-800 rounded-xl font-bold text-sm border border-slate-200 hover:border-navy-300 shadow-sm transition flex items-center gap-3 mt-3">
+    <div class="p-2 bg-rose-100 text-rose-800 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+    </div>
+    <div>
+        <div>Pengaturan Akun</div>
+        <div class="text-[10px] text-slate-400 font-normal">Ganti PIN Login & Manager</div>
+    </div>
+</button>
+
                 <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1 mt-2">Informasi Tambahan</p>
                 
                 <button onclick="openFeatureInfo(); closeSidebar();" class="w-full text-left px-4 py-4 bg-white hover:bg-slate-100 text-slate-700 hover:text-ink-900 rounded-xl font-bold text-sm border border-slate-200 hover:border-slate-300 shadow-sm transition flex items-center gap-3">
@@ -416,6 +426,37 @@
                     </div>
                 </div>
             </div>
+            <!-- TAB 5: PENGATURAN -->
+<div id="viewPengaturan" class="tab-content grid-cols-1">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 min-h-[700px]">
+        <h2 class="text-lg font-bold text-ink-900 flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">Pengaturan PIN & Akses Keamanan</h2>
+        
+        <div class="max-w-md bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Akun Untuk Diubah</label>
+                    <select id="pinRole" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none">
+                        <option value="kasir">Kasir (Kata Sandi Login Awal)</option>
+                        <option value="manager">Manager (Kata Sandi Fitur Terbatas)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">PIN Lama (Saat Ini)</label>
+                    <input type="password" id="oldPinInput" placeholder="Masukkan PIN saat ini" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none tracking-widest text-center font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">PIN Baru</label>
+                    <input type="password" id="newPinInput" placeholder="Masukkan PIN baru" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none tracking-widest text-center font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Konfirmasi PIN Baru</label>
+                    <input type="password" id="confirmNewPinInput" placeholder="Ketik ulang PIN baru" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-copper-500 outline-none tracking-widest text-center font-bold">
+                </div>
+                <button onclick="prosesGantiPin()" class="w-full bg-navy-800 hover:bg-navy-900 text-white font-bold py-3 rounded-xl mt-2 transition shadow-md">Simpan Perubahan PIN</button>
+            </div>
+        </div>
+    </div>
+</div>
         </main>
     </div> <!-- END OF MAIN APP CONTAINER -->
 
@@ -750,16 +791,23 @@
         }
 
         function switchTab(tabName) {
-            if (tabName === 'laporan' || tabName === 'menu') {
-                pendingTargetTab = tabName;
-                document.getElementById('targetTabName').textContent = tabName === 'laporan' ? 'Laporan Statistik' : 'Kelola Menu';
-                document.getElementById('managerPinInput').value = '';
-                document.getElementById('managerPinError').classList.add('hidden');
-                document.getElementById('managerPinModal').classList.remove('hidden');
-                return;
-            }
-            executeTabSwitch(tabName);
-        }
+    // TAMBAHKAN 'pengaturan' KEDALAM PROTEKSI PIN
+    if (tabName === 'laporan' || tabName === 'menu' || tabName === 'pengaturan') {
+        pendingTargetTab = tabName;
+        let title = 'Laporan Statistik';
+        if(tabName === 'menu') title = 'Kelola Menu';
+        if(tabName === 'pengaturan') title = 'Pengaturan Akun';
+        
+        document.getElementById('targetTabName').textContent = title;
+        document.getElementById('managerPinInput').value = '';
+        document.getElementById('managerPinError').classList.add('hidden');
+        document.getElementById('managerPinModal').classList.remove('hidden');
+        return;
+        
+    }
+    executeTabSwitch(tabName);
+    
+}
 
         function closeManagerPinModal() {
             document.getElementById('managerPinModal').classList.add('hidden');
@@ -767,30 +815,31 @@
         }
 
         function executeTabSwitch(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            
-            const btnKasir = document.getElementById('tabBtnKasir');
-            const btnDapur = document.getElementById('tabBtnDapur');
-            const btnLainnya = document.getElementById('tabBtnLainnya');
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    
+    const btnKasir = document.getElementById('tabBtnKasir');
+    const btnDapur = document.getElementById('tabBtnDapur');
+    const btnLainnya = document.getElementById('tabBtnLainnya');
 
-            const defaultClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-navy-200 hover:text-white hover:bg-navy-700";
-            const activeClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-navy-900 shadow-sm";
+    const defaultClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 text-navy-200 hover:text-white hover:bg-navy-700";
+    const activeClass = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-white text-navy-900 shadow-sm";
 
-            btnKasir.className = defaultClass;
-            btnDapur.className = defaultClass;
-            btnLainnya.className = defaultClass;
+    btnKasir.className = defaultClass;
+    btnDapur.className = defaultClass;
+    btnLainnya.className = defaultClass;
 
-            if (tabName === 'kasir') {
-                document.getElementById('viewKasir').classList.add('active'); btnKasir.className = activeClass;
-            } else if (tabName === 'dapur') {
-                document.getElementById('viewDapur').classList.add('active'); btnDapur.className = activeClass; renderKitchenQueue();
-            } else if (tabName === 'laporan') {
-                document.getElementById('viewLaporan').classList.add('active'); btnLainnya.className = activeClass; loadLaporanFromDatabase();
-            } else if (tabName === 'menu') {
-                document.getElementById('viewMenu').classList.add('active'); btnLainnya.className = activeClass; renderMenuTable();
-            }
-        }
-
+    if (tabName === 'kasir') {
+        document.getElementById('viewKasir').classList.add('active'); btnKasir.className = activeClass;
+    } else if (tabName === 'dapur') {
+        document.getElementById('viewDapur').classList.add('active'); btnDapur.className = activeClass; renderKitchenQueue();
+    } else if (tabName === 'laporan') {
+        document.getElementById('viewLaporan').classList.add('active'); btnLainnya.className = activeClass; loadLaporanFromDatabase();
+    } else if (tabName === 'menu') {
+        document.getElementById('viewMenu').classList.add('active'); btnLainnya.className = activeClass; renderMenuTable();
+    } else if (tabName === 'pengaturan') {
+        document.getElementById('viewPengaturan').classList.add('active'); btnLainnya.className = activeClass; 
+    }
+}
         async function refreshDataDariDatabase() {
             updateDbStatus(null, "Menyinkronkan...");
             await loadMenuFromDatabase();
@@ -1326,6 +1375,35 @@
             alertBox.className = `fixed top-16 left-1/2 transform -translate-x-1/2 z-[60] p-4 rounded-xl text-sm font-semibold border shadow-lg transition-all duration-300 w-11/12 max-w-md text-center ${ type === 'success' ? 'bg-navy-50 border-navy-300 text-navy-800' : 'bg-rose-50 border-rose-300 text-rose-800' }`;
             alertBox.textContent = message; alertBox.classList.remove('hidden'); setTimeout(() => alertBox.classList.add('hidden'), 3500);
         }
+
+        async function prosesGantiPin() {
+    const role = document.getElementById('pinRole').value;
+    const oldPin = document.getElementById('oldPinInput').value;
+    const newPin = document.getElementById('newPinInput').value;
+    const confirmNewPin = document.getElementById('confirmNewPinInput').value;
+
+    // Validasi lokal sebelum mengirim ke server
+    if(!oldPin || !newPin || !confirmNewPin) return showAlert("Semua kolom PIN wajib diisi!", "error");
+    if(newPin !== confirmNewPin) return showAlert("PIN Baru dan Konfirmasi tidak cocok!", "error");
+    if(newPin.length < 4) return showAlert("Keamanan ditolak: PIN baru minimal 4 karakter!", "error");
+
+    try {
+        const result = await apiRequest('/api/update-pin', {
+            method: 'PUT',
+            body: JSON.stringify({ role, oldPin, newPin })
+        });
+
+        if(result.success) {
+            showAlert(result.message, "success");
+            // Kosongkan form setelah sukses
+            document.getElementById('oldPinInput').value = '';
+            document.getElementById('newPinInput').value = '';
+            document.getElementById('confirmNewPinInput').value = '';
+        }
+    } catch (err) {
+        showAlert(err.message, "error");
+    }
+}
 
         function openPaymentModal() {
             if (appState.cart.length === 0) { showAlert('Keranjang kosong! Silakan pilih menu.', 'error'); return; }

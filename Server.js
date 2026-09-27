@@ -327,6 +327,38 @@ app.put('/api/pesanan/:id/status', authenticateToken, async (req, res) => {
     }
 });
 
+// --- ENDPOINT GANTI PIN (KASIR & MANAGER) ---
+app.put('/api/update-pin', authenticateToken, async (req, res) => {
+    const { role, oldPin, newPin } = req.body;
+    
+    // Validasi role yang diizinkan
+    if (!['kasir', 'manager'].includes(role)) {
+        return res.status(400).json({ success: false, message: 'Role tidak valid.' });
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        // Cari hash PIN lama berdasarkan role di database
+        const [rows] = await connection.query('SELECT pin_hash FROM pengguna WHERE role = ? LIMIT 1', [role]);
+        if (rows.length === 0) throw new Error(`Akun ${role} tidak ditemukan di database.`);
+
+        // Verifikasi ketat PIN lama menggunakan bcrypt
+        const match = await bcrypt.compare(oldPin, rows[0].pin_hash);
+        if (!match) throw new Error('PIN Lama yang Anda masukkan salah!');
+
+        // Hash PIN baru dan simpan ke database
+        const saltRounds = 10;
+        const newHash = await bcrypt.hash(newPin, saltRounds);
+        await connection.query('UPDATE pengguna SET pin_hash = ? WHERE role = ?', [newHash, role]);
+
+        connection.release();
+        res.json({ success: true, message: `PIN ${role.toUpperCase()} berhasil diperbarui!` });
+    } catch (error) {
+        if(connection) connection.release();
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
 // 5. GET /api/laporan
 app.get('/api/laporan', authenticateToken, async (req, res) => {
     try {
@@ -347,6 +379,7 @@ app.get('/api/laporan', authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
 
 // 6. GET /api/statistik/jam
 app.get('/api/statistik/jam', authenticateToken, async (req, res) => {
